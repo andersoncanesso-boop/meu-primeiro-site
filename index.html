@@ -52,7 +52,6 @@
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
         #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
         
-        /* ALERTA DE ERRO REFORÇADO */
         #statusLogin { text-align: center; color: white; background: #ef4444; font-size: 0.85rem; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; display: none; border: 2px solid #b91c1c; }
     </style>
 </head>
@@ -125,7 +124,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
@@ -152,18 +151,16 @@
         let tarefasGlobais = [];
         let idEdicao = null;
 
-        // FUNÇÃO PARA MOSTRAR ERRO QUE PERSISTE NO RECARREGAMENTO
         function verificarErroAcesso() {
             if (localStorage.getItem('erroAcesso') === 'true') {
                 const alerta = document.getElementById('statusLogin');
                 alerta.style.display = 'block';
                 alerta.innerText = "🚫 ACESSO NEGADO: Seu e-mail não faz parte da Família Canesso.";
-                localStorage.removeItem('erroAcesso'); // Limpa o "post-it"
+                localStorage.removeItem('erroAcesso');
                 setTimeout(() => { alerta.style.display = 'none'; }, 6000);
             }
         }
 
-        // EXECUTA A VERIFICAÇÃO AO ABRIR O SITE
         verificarErroAcesso();
 
         document.getElementById('btnLogin').onclick = () => {
@@ -175,8 +172,11 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const emailUsuario = user.email.toLowerCase();
-                if (emailsAutorizados.includes(emailUsuario)) {
+                // NORMALIZAÇÃO RADICAL DO EMAIL (Minúsculo e sem espaços)
+                const emailUsuario = user.email.trim().toLowerCase();
+                const listaLimpa = emailsAutorizados.map(e => e.trim().toLowerCase());
+
+                if (listaLimpa.includes(emailUsuario)) {
                     document.getElementById('telaLogin').classList.add('hidden');
                     document.getElementById('telaApp').classList.remove('hidden');
                     document.getElementById('userName').innerText = user.displayName ? user.displayName.split(' ')[0] : 'Eu';
@@ -185,10 +185,9 @@
                     document.getElementById('inputNomeManual').value = user.displayName ? user.displayName.split(' ')[0] : 'Anderson';
                     escutarTarefas();
                 } else {
-                    // SE O EMAIL FOR INVÁLIDO:
-                    localStorage.setItem('erroAcesso', 'true'); // Marca o erro no "post-it"
+                    localStorage.setItem('erroAcesso', 'true');
                     await signOut(auth);
-                    window.location.reload(); // Força o recarregamento para exibir a mensagem
+                    window.location.reload();
                 }
             } else {
                 document.getElementById('telaLogin').classList.remove('hidden');
@@ -196,20 +195,22 @@
             }
         });
 
-        // --- RESTANTE DO CÓDIGO (BACKUP, RENDER, SALVAR) MANTIDO ---
         window.scrollFiltros = (valor) => document.getElementById('filtrosContainer').scrollBy({ left: valor, behavior: 'smooth' });
+        
         function formatarDataAmigavel(d) {
             if (!d) return "";
             const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
             const obj = new Date(d + "T12:00:00");
             return `${String(obj.getDate()).padStart(2, '0')}/${String(obj.getMonth() + 1).padStart(2, '0')} (${dias[obj.getDay()]})`;
         }
+
         function escutarTarefas() {
             onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snap) => {
                 tarefasGlobais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderizar();
             });
         }
+
         document.getElementById('btnSalvar').onclick = async () => {
             const nome = document.getElementById('inputNomeManual').value;
             const desc = document.getElementById('inputTarefa').value;
@@ -226,10 +227,12 @@
             }
             document.getElementById('inputTarefa').value = "";
         };
+
         window.exportarBackup = () => {
             const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
             const dl = document.createElement('a'); dl.setAttribute("href", str); dl.setAttribute("download", "backup_familiar.json"); dl.click();
         };
+
         window.importarBackup = (ev) => {
             const reader = new FileReader();
             reader.onload = async (e) => {
@@ -244,10 +247,12 @@
             };
             reader.readAsText(ev.target.files[0]);
         };
+
         window.toggleTarefa = async (id, s) => {
             if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
             await updateDoc(doc(db, "tarefas", id), { concluida: s });
         };
+
         window.prepararEdicao = (id, d, c, dt, n) => {
             idEdicao = id;
             document.getElementById('inputNomeManual').value = n;
@@ -257,14 +262,18 @@
             document.getElementById('btnSalvar').innerText = "Salvar Alteração";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
+
         window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
+        
         window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
+
         function renderizar() {
             const lista = document.getElementById('listaTarefas');
             const filtros = document.getElementById('filtrosContainer');
             lista.innerHTML = "";
             const cats = ["Tudo", "Geral", "Alimentação", "Mercado", "Carro", "Igreja", "Educação", "Férias", "Faxina", "Pet", "Manutenção", "Saúde", "Finanças", "Lazer"];
             filtros.innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
+            
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
                 li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
