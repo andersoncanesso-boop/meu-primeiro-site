@@ -3,108 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar Pro</title>
+    <title>Gestão Familiar Pro - Enterprise</title>
     <style>
         :root { --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; --primary: #2563eb; }
         body.dark-mode { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #3b82f6; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: 0.3s; }
-        .container { background: var(--card); padding: 20px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: background 0.3s; }
+        .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
-        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        /* Dashboard e Progress */
+        .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
+        .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
+        #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
         .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
 
-        /* Filtros Fixos */
-        .filtros-wrapper { display: flex; align-items: center; gap: 5px; margin-bottom: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
-        .filtros { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; flex: 1; padding: 5px 0; }
+        .backup-section { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .btn-backup { font-size: 0.7rem; padding: 6px 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: bold; }
+
+        .filtros-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 20px; gap: 5px; }
+        .filtros { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 5px 0; flex: 1; }
         .filtros::-webkit-scrollbar { display: none; }
-        .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; min-width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; min-width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; color: var(--text); font-weight: bold; }
         
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* Lista */
+        #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
-        .concluida { opacity: 0.4; filter: grayscale(1); }
-        .autor-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; margin-right: 10px; }
-        .autor-mini { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--primary); }
-        .autor-nome { font-size: 0.6rem; font-weight: bold; color: #64748b; }
+        .concluida { opacity: 0.4; }
+        .concluida .texto-tarefa { text-decoration: line-through; }
+        .tarefa-main { display: flex; align-items: center; gap: 10px; }
+        .autor-mini { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--primary); }
+        .info-container { display: flex; flex-direction: column; }
+        .tag-cat { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--primary); }
+        .data-tarefa { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+        .acoes { display: flex; gap: 15px; }
         
-        .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 20px; }
-        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); margin-bottom: 10px; width: 100%; box-sizing: border-box; }
-        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
+        .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
+        .form-group { display: flex; flex-direction: column; gap: 10px; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
+        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
+
     <div class="container">
         <div id="telaLogin">
-            <h1 style="text-align:center;">🏠 Gestão Familiar</h1>
-            <button id="btnLogin" style="width:100%; padding:15px; border-radius:12px; cursor:pointer; background: white; border: 1px solid #ccc; font-weight: bold;">Entrar com Google</button>
+            <h1 style="text-align:center; color: #2563eb;">🏠 Gestão Familiar</h1>
+            <button id="btnLogin" style="width:100%; padding:16px; border-radius:12px; background:white; border:1px solid #ddd; font-weight:bold; cursor:pointer;">Entrar com Google</button>
         </div>
 
         <div id="telaApp" class="hidden">
             <div class="user-header">
-                <div class="user-info">
-                    <img id="userPhoto" src=""> 
-                    <span id="userNameHeader" style="font-weight:bold; margin-left:10px;">Carregando...</span>
-                </div>
+                <div class="user-info"><img id="userPhoto" src=""> <span id="userName" style="font-weight: bold; margin-left: 10px;"></span></div>
                 <div>
-                    <button id="btnDarkMode" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">🌙</button>
-                    <button id="btnLogout" style="color:red; background:none; border:none; cursor:pointer; margin-left:10px; font-weight:bold;">Sair</button>
+                    <button id="btnDarkMode" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">🌙</button>
+                    <button id="btnLogout" style="color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold; margin-left:10px;">Sair</button>
                 </div>
             </div>
 
-            <div class="form-card">
-                <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
-                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <select id="selectCategoria" style="flex: 1;">
-                        <option value="Geral">📂 Geral</option>
-                        <option value="Alimentação">🧑‍🍳 Alimentação</option>
-                        <option value="Mercado">🛒 Mercado</option>
-                        <option value="Carro">🚗 Carro</option>
-                        <option value="Igreja">⛪ Igreja</option>
-                        <option value="Educação">📚 Educação</option>
-                        <option value="Férias">🌴 Férias</option>
-                        <option value="Faxina">🧹 Faxina</option>
-                        <option value="Pet">🐾 Pet</option>
-                        <option value="Manutenção">🛠️ Manutenção</option>
-                        <option value="Saúde">💊 Saúde</option>
-                        <option value="Finanças">💰 Finanças</option>
-                        <option value="Lazer">🍕 Lazer</option>
-                    </select>
-                    <input type="date" id="inputData">
+            <div class="backup-section">
+                <button class="btn-backup" onclick="window.exportarBackup()">📥 Backup</button>
+                <button class="btn-backup" onclick="document.getElementById('inputFile').click()">📤 Restaurar</button>
+                <input type="file" id="inputFile" class="hidden" accept=".json" onchange="window.importarBackup(event)">
+            </div>
+
+            <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
+            <div class="progress-container"><div id="progressBar"></div></div>
+
+            <div class="form-card" id="formCard">
+                <div class="form-group">
+                    <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
+                    <div style="display: flex; gap: 8px;">
+                        <select id="selectCategoria" style="flex: 1;">
+                            <option value="Geral">📂 Geral</option>
+                            <option value="Alimentação">🧑‍🍳 Alimentação</option>
+                            <option value="Mercado">🛒 Mercado</option>
+                            <option value="Carro">🚗 Carro</option>
+                            <option value="Igreja">⛪ Igreja</option>
+                            <option value="Educação">📚 Educação</option>
+                            <option value="Férias">🌴 Férias</option>
+                            <option value="Faxina">🧹 Faxina</option>
+                            <option value="Pet">🐾 Pet</option>
+                            <option value="Manutenção">🛠️ Manutenção</option>
+                            <option value="Saúde">💊 Saúde</option>
+                            <option value="Finanças">💰 Finanças</option>
+                            <option value="Lazer">🍕 Lazer</option>
+                        </select>
+                        <input type="date" id="inputData" style="flex: 1;">
+                    </div>
+                    <button id="btnSalvar">Adicionar Tarefa</button>
                 </div>
-                <button id="btnSalvar">Adicionar Tarefa</button>
             </div>
 
             <div class="filtros-wrapper">
-                <button class="seta-nav" onclick="document.getElementById('filtrosContainer').scrollBy(-100,0)">❮</button>
-                <div class="filtros" id="filtrosContainer">
-                    <button class="filtro-btn active" onclick="mudarFiltro('Tudo', this)">Tudo</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Geral', this)">Geral</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Alimentação', this)">Alimentação</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Mercado', this)">Mercado</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Carro', this)">Carro</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Igreja', this)">Igreja</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Educação', this)">Educação</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Férias', this)">Férias</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Faxina', this)">Faxina</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Pet', this)">Pet</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Manutenção', this)">Manutenção</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Saúde', this)">Saúde</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Finanças', this)">Finanças</button>
-                    <button class="filtro-btn" onclick="mudarFiltro('Lazer', this)">Lazer</button>
-                </div>
-                <button class="seta-nav" onclick="document.getElementById('filtrosContainer').scrollBy(100,0)">❯</button>
+                <button class="seta-nav" onclick="scrollFiltros(-100)">❮</button>
+                <div class="filtros" id="filtrosContainer"></div>
+                <button class="seta-nav" onclick="scrollFiltros(100)">❯</button>
             </div>
 
-            <ul id="listaTarefas" style="list-style:none; padding:0;"></ul>
+            <ul id="listaTarefas"></ul>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <audio id="somCheck" src="https://actions.google.com/sounds/v1/foley/beeps_and_bloops_glitchy_digital_ui.ogg"></audio>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -132,7 +142,7 @@
             if (user) {
                 document.getElementById('telaLogin').classList.add('hidden');
                 document.getElementById('telaApp').classList.remove('hidden');
-                document.getElementById('userNameHeader').innerText = user.displayName ? user.displayName.split(' ')[0] : 'Eu';
+                document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                 document.getElementById('userPhoto').src = user.photoURL;
                 document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
                 escutarTarefas();
@@ -142,18 +152,17 @@
             }
         });
 
-        window.mudarFiltro = (cat, btn) => {
-            categoriaAtiva = cat;
-            document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderizar();
+        window.scrollFiltros = (valor) => {
+            document.getElementById('filtrosContainer').scrollBy({ left: valor, behavior: 'smooth' });
         };
 
-        function formatarData(d) {
-            if (!d) return "";
-            const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-            const data = new Date(d + "T12:00:00");
-            return `${String(data.getDate()).padStart(2,'0')}/${String(data.getMonth()+1).padStart(2,'0')} (${dias[data.getDay()]})`;
+        function formatarDataAmigavel(dataStr) {
+            if (!dataStr) return "";
+            const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+            const dataObj = new Date(dataStr + "T12:00:00");
+            const dia = String(dataObj.getDate()).padStart(2, '0');
+            const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+            return `${dia}/${mes} (${diasSemana[dataObj.getDay()]})`;
         }
 
         function escutarTarefas() {
@@ -165,69 +174,113 @@
 
         document.getElementById('btnSalvar').onclick = async () => {
             const desc = document.getElementById('inputTarefa');
-            const cat = document.getElementById('selectCategoria').value;
-            const data = document.getElementById('inputData').value;
+            const cat = document.getElementById('selectCategoria');
+            const data = document.getElementById('inputData');
             if (!desc.value) return;
-
-            const nomeAutor = document.getElementById('userNameHeader').innerText;
-            const fotoAutor = document.getElementById('userPhoto').src;
-
             if (idEdicao) {
-                await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc.value, categoria: cat, dataLimite: data, autorNome: nomeAutor, autorFoto: fotoAutor });
+                await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc.value, categoria: cat.value, dataLimite: data.value });
                 idEdicao = null;
                 document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
             } else {
                 await addDoc(collection(db, "tarefas"), { 
-                    descricao: desc.value, categoria: cat, dataLimite: data, autorFoto: fotoAutor, autorNome: nomeAutor, concluida: false, criadoEm: new Date() 
+                    descricao: desc.value, 
+                    categoria: cat.value, 
+                    dataLimite: data.value, 
+                    autorFoto: auth.currentUser.photoURL, 
+                    concluida: false, 
+                    criadoEm: new Date() 
                 });
             }
             desc.value = "";
         };
 
+        window.exportarBackup = () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
+            const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "backup_familiar.json"); dl.click();
+        };
+
+        window.importarBackup = (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const tarefas = JSON.parse(e.target.result);
+                    const batch = writeBatch(db);
+                    tarefas.forEach(t => {
+                        const ref = doc(collection(db, "tarefas"));
+                        // LOGICA CORRIGIDA: Mantém a foto do backup se existir, senão usa a do logado
+                        batch.set(ref, { 
+                            descricao: t.descricao, 
+                            categoria: t.categoria, 
+                            dataLimite: t.dataLimite, 
+                            autorFoto: t.autorFoto || auth.currentUser.photoURL, 
+                            concluida: t.concluida || false, 
+                            criadoEm: new Date() 
+                        });
+                    });
+                    await batch.commit();
+                    alert("Restauração concluída com as fotos originais preservadas!");
+                } catch (err) {
+                    alert("Erro ao ler o arquivo de backup.");
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        window.toggleTarefa = async (id, s) => {
+            if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
+            await updateDoc(doc(db, "tarefas", id), { concluida: s });
+        };
+
+        window.prepararEdicao = (id, desc, cat, data) => {
+            idEdicao = id;
+            document.getElementById('inputTarefa').value = desc;
+            document.getElementById('selectCategoria').value = cat;
+            document.getElementById('inputData').value = data;
+            document.getElementById('btnSalvar').innerText = "Salvar Alteração";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
+        window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
+
         function renderizar() {
             const lista = document.getElementById('listaTarefas');
+            const filtrosDiv = document.getElementById('filtrosContainer');
             lista.innerHTML = "";
+            const cats = ["Tudo", "Geral", "Alimentação", "Mercado", "Carro", "Igreja", "Educação", "Férias", "Faxina", "Pet", "Manutenção", "Saúde", "Finanças", "Lazer"];
+            filtrosDiv.innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
+            
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
                 li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
                 li.innerHTML = `
-                    <div style="display:flex; align-items:center; flex:1;">
+                    <div class="tarefa-main">
                         <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
-                        <div class="autor-box">
-                            <img src="${t.autorFoto || ''}" class="autor-mini">
-                            <span class="autor-nome">${t.autorNome || '...'}</span>
-                        </div>
-                        <div style="display:flex; flex-direction:column; flex:1;">
-                            <span style="font-size:0.6rem; font-weight:800; color:#2563eb; text-transform:uppercase;">${t.categoria}</span>
-                            <span style="font-weight:600;">${t.descricao}</span>
-                            <span style="font-size:0.7rem; color:#64748b;">📅 ${formatarData(t.dataLimite)}</span>
+                        <img src="${t.autorFoto || ''}" class="autor-mini">
+                        <div class="info-container">
+                            <span class="tag-cat">${t.categoria}</span>
+                            <span class="texto-tarefa" style="font-weight:600;">${t.descricao}</span>
+                            <span class="data-tarefa">📅 ${formatarDataAmigavel(t.dataLimite)}</span>
                         </div>
                     </div>
-                    <div>
-                        <button onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}')" style="background:none; border:none; cursor:pointer;">✏️</button>
-                        <button onclick="window.eliminar('${t.id}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                    <div class="acoes">
+                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}')">✏️</button>
+                        <button style="background:none; border:none; cursor:pointer;" onclick="window.eliminar('${t.id}')">🗑️</button>
                     </div>`;
                 lista.appendChild(li);
             });
+            const total = tarefasGlobais.length;
+            const feitas = tarefasGlobais.filter(t => t.concluida).length;
+            const porc = total > 0 ? Math.round((feitas / total) * 100) : 0;
+            document.getElementById('progressBar').style.width = porc + "%";
+            document.getElementById('txtPercentual').innerText = porc + "%";
         }
-
-        window.toggleTarefa = async (id, s) => {
-            if (s) confetti({particleCount:100, spread:70, origin:{y:0.6}});
-            await updateDoc(doc(db, "tarefas", id), { concluida: s });
-        };
-        window.prepararEdicao = (id, d, c, dt) => {
-            idEdicao = id;
-            document.getElementById('inputTarefa').value = d;
-            document.getElementById('selectCategoria').value = c;
-            document.getElementById('inputData').value = dt;
-            document.getElementById('btnSalvar').innerText = "Salvar Alteração";
-            window.scrollTo(0,0);
-        };
-        window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
-        document.getElementById('btnDarkMode').onclick = () => document.body.classList.toggle('dark-mode');
+        document.getElementById('btnDarkMode').onclick = () => { document.body.classList.toggle('dark-mode'); document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙'; };
     </script>
 </body>
 </html>
+
 
 
 
