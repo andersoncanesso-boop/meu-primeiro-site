@@ -9,28 +9,22 @@
         .container { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; }
         .hidden { display: none; }
         h1 { color: #1a73e8; text-align: center; margin-top: 0; }
-        
         .user-header { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 15px; margin-bottom: 20px; }
         .user-info { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; }
         .user-info img { width: 30px; border-radius: 50%; }
-
         .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
         input, select { padding: 12px; border: 2px solid #edf2f7; border-radius: 12px; font-size: 1rem; outline: none; }
-        input:focus, select:focus { border-color: #1a73e8; }
-        #btnSalvar { background: #1a73e8; color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1rem; }
-
+        #btnSalvar { background: #1a73e8; color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; }
         .filtros { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .filtro-btn { background: #fff; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
-        .filtro-btn.active { background: #1a73e8; color: white; border-color: #1a73e8; }
-
+        .filtro-btn { background: #fff; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; }
+        .filtro-btn.active { background: #1a73e8; color: white; }
         #listaTarefas { list-style: none; padding: 0; }
-        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f7fafc; background: #fff; border-radius: 10px; margin-bottom: 5px; transition: 0.3s; }
+        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f7fafc; background: #fff; border-radius: 10px; margin-bottom: 5px; }
         .tarefa-main { display: flex; align-items: center; gap: 10px; }
         .tag { font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; background: #edf2f7; color: #4a5568; font-weight: bold; }
-        .concluida { opacity: 0.4; background: #f9f9f9; }
+        .concluida { opacity: 0.4; }
         .concluida span { text-decoration: line-through; }
         .foto-autor { width: 25px; height: 25px; border-radius: 50%; }
-        
         #btnLogin { width: 100%; background: #fff; border: 2px solid #eee; padding: 15px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; }
     </style>
 </head>
@@ -82,7 +76,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
@@ -100,12 +94,92 @@
 
         let categoriaAtual = "Tudo";
 
-        // --- LÓGICA DE LOGIN ---
-        document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
+        // LOGIN COM REDIRECIONAMENTO
+        document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
+        // MONITORAR ESTADO DE LOGIN
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('telaLogin').classList.add('hidden');
+                document.getElementById('telaApp').classList.remove('hidden');
+                document.getElementById('userName').innerText = user.displayName.split(' ')[0];
+                document.getElementById('userPhoto').src = user.photoURL;
+                carregarTarefas();
+            } else {
+                document.getElementById('telaLogin').classList.remove('hidden');
+                document.getElementById('telaApp').classList.add('hidden');
+            }
+        });
 
+        // DESBLOQUEIO DE ÁUDIO
+        const desbloquearAudio = () => {
+            const som = document.getElementById('somCheck');
+            som.play().then(() => { som.pause(); som.currentTime = 0; }).catch(() => {});
+            document.removeEventListener('click', desbloquearAudio);
+        };
+        document.addEventListener('click', desbloquearAudio);
 
+        document.getElementById('btnSalvar').onclick = async () => {
+            const input = document.getElementById('inputTarefa');
+            const cat = document.getElementById('selectCategoria').value;
+            if (input.value) {
+                await addDoc(collection(db, "tarefas"), {
+                    descricao: input.value,
+                    categoria: cat,
+                    autorFoto: auth.currentUser.photoURL,
+                    concluida: false,
+                    dataCriacao: new Date()
+                });
+                input.value = "";
+            }
+        };
+
+        window.filtrar = (cat, btn) => {
+            categoriaAtual = cat;
+            document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            carregarTarefas();
+        };
+
+        function carregarTarefas() {
+            const q = query(collection(db, "tarefas"), orderBy("dataCriacao", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const lista = document.getElementById('listaTarefas');
+                lista.innerHTML = "";
+                snapshot.forEach(docSnap => {
+                    const t = docSnap.data();
+                    if (categoriaAtual !== "Tudo" && t.categoria !== categoriaAtual) return;
+                    const li = document.createElement('li');
+                    li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
+                    li.innerHTML = `
+                        <div class="tarefa-main">
+                            <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${docSnap.id}', this.checked)">
+                            <img src="${t.autorFoto}" class="foto-autor">
+                            <div>
+                                <span class="tag">${t.categoria}</span><br>
+                                <span>${t.descricao}</span>
+                            </div>
+                        </div>
+                        <button onclick="window.excluirTarefa('${docSnap.id}')" style="background:none; border:none; color:#ddd; cursor:pointer;">🗑️</button>
+                    `;
+                    lista.appendChild(li);
+                });
+            });
+        }
+
+        window.toggleTarefa = async (id, status) => {
+            if (status) {
+                const som = document.getElementById('somCheck');
+                try { som.currentTime = 0; await som.play(); } catch (e) {}
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+            await updateDoc(doc(db, "tarefas", id), { concluida: status });
+        };
+
+        window.excluirTarefa = async (id) => {
+            if(confirm("Excluir tarefa?")) await deleteDoc(doc(db, "tarefas", id));
+        };
+    </script>
+</body>
+</html>
