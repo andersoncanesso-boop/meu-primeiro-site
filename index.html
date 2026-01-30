@@ -11,7 +11,6 @@
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
-        /* Dashboard */
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -30,13 +29,11 @@
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Estilo da Lista */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
         
-        /* Box do Autor */
         .autor-box { display: flex; flex-direction: column; align-items: center; min-width: 50px; text-align: center; margin-right: 10px; }
         .autor-mini { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--primary); margin-bottom: 3px; }
         .autor-nome { font-size: 0.55rem; font-weight: bold; color: #64748b; white-space: nowrap; max-width: 50px; overflow: hidden; text-overflow: ellipsis; }
@@ -181,17 +178,22 @@
             const cat = document.getElementById('selectCategoria');
             const data = document.getElementById('inputData');
             if (!desc.value) return;
+            
+            const dadosTarefa = {
+                descricao: desc.value, 
+                categoria: cat.value, 
+                dataLimite: data.value, 
+                autorFoto: auth.currentUser.photoURL, 
+                autorNome: auth.currentUser.displayName.split(' ')[0]
+            };
+
             if (idEdicao) {
-                await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc.value, categoria: cat.value, dataLimite: data.value });
+                await updateDoc(doc(db, "tarefas", idEdicao), dadosTarefa);
                 idEdicao = null;
                 document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
             } else {
                 await addDoc(collection(db, "tarefas"), { 
-                    descricao: desc.value, 
-                    categoria: cat.value, 
-                    dataLimite: data.value, 
-                    autorFoto: auth.currentUser.photoURL, 
-                    autorNome: auth.currentUser.displayName.split(' ')[0], // Salva apenas o primeiro nome
+                    ...dadosTarefa,
                     concluida: false, 
                     criadoEm: new Date() 
                 });
@@ -218,7 +220,7 @@
                             categoria: t.categoria, 
                             dataLimite: t.dataLimite, 
                             autorFoto: t.autorFoto || auth.currentUser.photoURL, 
-                            autorNome: t.autorNome || "Autor", 
+                            autorNome: t.autorNome || "...", 
                             concluida: t.concluida || false, 
                             criadoEm: new Date() 
                         });
@@ -256,7 +258,7 @@
             
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
-                li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
+                li.className = `tarefa-item ${t.concluida ? 'status-concluido' : ''}`;
                 li.innerHTML = `
                     <div style="display:flex; align-items:center; flex:1;">
                         <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
@@ -286,6 +288,5 @@
     </script>
 </body>
 </html>
-
 
 
