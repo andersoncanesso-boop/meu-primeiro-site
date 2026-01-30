@@ -23,7 +23,6 @@
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Lista */
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; filter: grayscale(1); }
         .autor-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; margin-right: 10px; }
@@ -36,7 +35,6 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <div id="telaLogin">
             <h1 style="text-align:center;">🏠 Gestão Familiar</h1>
@@ -104,7 +102,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -145,7 +142,6 @@
             }
         });
 
-        // FUNÇÃO DE FILTRO GLOBAL
         window.mudarFiltro = (cat, btn) => {
             categoriaAtiva = cat;
             document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
@@ -173,7 +169,6 @@
             const data = document.getElementById('inputData').value;
             if (!desc.value) return;
 
-            // CAPTURA DO CABEÇALHO PARA NÃO FALHAR
             const nomeAutor = document.getElementById('userNameHeader').innerText;
             const fotoAutor = document.getElementById('userPhoto').src;
 
@@ -192,7 +187,6 @@
         function renderizar() {
             const lista = document.getElementById('listaTarefas');
             lista.innerHTML = "";
-            
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
                 li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
@@ -234,6 +228,7 @@
     </script>
 </body>
 </html>
+
 
 
 
