@@ -11,7 +11,6 @@
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
-        /* Dashboard e Progress */
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -30,7 +29,6 @@
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Lista */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
@@ -41,7 +39,7 @@
         .autor-mini { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--primary); }
         .autor-nome-label { font-size: 0.6rem; font-weight: bold; color: #64748b; margin-top: 2px; }
 
-        .info-container { display: flex; flex-direction: column; flex: 1; }
+        .info-container { display: flex; flex-direction: column; flex: 1; margin-left: 5px; }
         .tag-cat { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--primary); }
         .data-tarefa { font-size: 0.75rem; color: #64748b; font-weight: 500; }
         .acoes { display: flex; gap: 15px; }
@@ -150,7 +148,6 @@
                 document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                 document.getElementById('userPhoto').src = user.photoURL;
                 document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
-                // Preenche o nome manual com o nome do Google por padrão
                 document.getElementById('inputNomeManual').value = user.displayName.split(' ')[0];
                 escutarTarefas();
             } else {
@@ -187,11 +184,14 @@
             
             if (!desc.value) return;
 
+            // FORÇA A PRIMEIRA LETRA EM MAIÚSCULA
+            const textoFormatado = desc.value.charAt(0).toUpperCase() + desc.value.slice(1);
+
             const dados = {
-                descricao: desc.value, 
+                descricao: textoFormatado, 
                 categoria: cat.value, 
                 dataLimite: data.value,
-                autorNome: nomeManual.value || "Alguém", // Salva o nome manual
+                autorNome: nomeManual.value || "Alguém",
                 autorFoto: auth.currentUser.photoURL
             };
 
@@ -299,6 +299,7 @@
     </script>
 </body>
 </html>
+
 
 
 
