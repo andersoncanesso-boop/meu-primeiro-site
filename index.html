@@ -11,7 +11,7 @@
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
-        /* Dashboard e Progress */
+        /* Dashboard */
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -27,12 +27,12 @@
         .filtros-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 20px; gap: 5px; }
         .filtros { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 5px 0; flex: 1; }
         .filtros::-webkit-scrollbar { display: none; }
-        .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; min-width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; color: var(--text); }
+        .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; min-width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; color: var(--text); font-weight: bold; }
         
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Itens da Lista */
+        /* Lista */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
@@ -80,13 +80,14 @@
                     <div style="display: flex; gap: 8px;">
                         <select id="selectCategoria" style="flex: 1;">
                             <option value="Geral">📂 Geral</option>
-                            <option value="Carro">🚗 Carro</option>
+                            <option value="Alimentação">🧑‍🍳 Alimentação</option>
                             <option value="Mercado">🛒 Mercado</option>
+                            <option value="Carro">🚗 Carro</option>
+                            <option value="Igreja">⛪ Igreja</option>
+                            <option value="Educação">📚 Educação</option>
+                            <option value="Férias">🌴 Férias</option>
                             <option value="Faxina">🧹 Faxina</option>
                             <option value="Pet">🐾 Pet</option>
-                            <option value="Educação">📚 Educação</option>
-                            <option value="Igreja">⛪ Igreja</option>
-                            <option value="Férias">🌴 Férias</option>
                             <option value="Manutenção">🛠️ Manutenção</option>
                             <option value="Saúde">💊 Saúde</option>
                             <option value="Finanças">💰 Finanças</option>
@@ -228,7 +229,7 @@
             const lista = document.getElementById('listaTarefas');
             const filtrosDiv = document.getElementById('filtrosContainer');
             lista.innerHTML = "";
-            const cats = ["Tudo", "Geral", "Carro", "Mercado", "Faxina", "Pet", "Educação", "Igreja", "Férias", "Manutenção", "Saúde", "Finanças", "Lazer"];
+            const cats = ["Tudo", "Geral", "Alimentação", "Mercado", "Carro", "Igreja", "Educação", "Férias", "Faxina", "Pet", "Manutenção", "Saúde", "Finanças", "Lazer"];
             filtrosDiv.innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
             
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
@@ -259,9 +260,6 @@
     </script>
 </body>
 </html>
-
-
-
 
 
 
