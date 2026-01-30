@@ -3,32 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Minhas Tarefas</title>
+    <title>Gestão Familiar - Painel</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f4f7f6; }
-        .card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
-        h1 { color: #333; margin-bottom: 1.5rem; font-size: 1.5rem; }
-        input { width: 100%; padding: 12px; margin-bottom: 1rem; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; outline: none; transition: border-color 0.3s; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h1 { color: #1a73e8; text-align: center; font-size: 1.8rem; }
+        .form-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 10px; outline: none; font-size: 1rem; }
         input:focus { border-color: #1a73e8; }
-        button { width: 100%; background-color: #1a73e8; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: background 0.3s; }
-        button:hover { background-color: #1557b0; }
-        #status { margin-top: 1rem; font-size: 0.9rem; font-weight: 500; }
+        button#btnSalvar { background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        
+        /* Estilo da Lista */
+        #listaTarefas { list-style: none; padding: 0; margin-top: 20px; border-top: 1px solid #eee; }
+        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; background: #fff; transition: 0.2s; }
+        .tarefa-item:hover { background: #f9f9f9; }
+        .btn-delete { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>🏠 Minhas Tarefas</h1>
-        <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
-        <button id="btnSalvar">Adicionar Tarefa</button>
-        <div id="status"></div>
+    <div class="container">
+        <h1>🏠 Gestão Familiar</h1>
+        
+        <div class="form-group">
+            <input type="text" id="inputTarefa" placeholder="Nova tarefa...">
+            <button id="btnSalvar">Add</button>
+        </div>
+
+        <ul id="listaTarefas">
+            </ul>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Suas chaves de conexão
         const firebaseConfig = {
             apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
             authDomain: "gestao-familiar-ac7d6.firebaseapp.com",
@@ -40,38 +49,45 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const tarefasRef = collection(db, "tarefas");
 
-        const btn = document.getElementById('btnSalvar');
-        const input = document.getElementById('inputTarefa');
-        const statusDiv = document.getElementById('status');
-
-        btn.onclick = async () => {
-            const tarefaTexto = input.value;
-
-            if (!tarefaTexto) {
-                statusDiv.innerText = "⚠️ Por favor, digite algo!";
-                statusDiv.style.color = "orange";
-                return;
-            }
-
-            statusDiv.innerText = "Enviando...";
-            statusDiv.style.color = "#666";
-            
-            try {
-                await addDoc(collection(db, "tarefas"), {
-                    descricao: tarefaTexto,
-                    dataCriacao: new Date(),
-                    concluida: false
+        // 1. SALVAR TAREFA
+        document.getElementById('btnSalvar').onclick = async () => {
+            const input = document.getElementById('inputTarefa');
+            if (input.value) {
+                await addDoc(tarefasRef, {
+                    descricao: input.value,
+                    dataCriacao: new Date()
                 });
-                statusDiv.innerText = "✅ Tarefa salva com sucesso!";
-                statusDiv.style.color = "green";
-                input.value = ""; // Limpa o campo após salvar
-            } catch (e) {
-                console.error(e);
-                statusDiv.innerText = "❌ Erro ao salvar.";
-                statusDiv.style.color = "red";
+                input.value = "";
             }
         };
+
+        // 2. LER TAREFAS EM TEMPO REAL
+        const q = query(tarefasRef, orderBy("dataCriacao", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const listaUl = document.getElementById('listaTarefas');
+            listaUl.innerHTML = ""; // Limpa a lista antes de reconstruir
+            
+            snapshot.forEach((docSnap) => {
+                const tarefa = docSnap.data();
+                const li = document.createElement('li');
+                li.className = 'tarefa-item';
+                li.innerHTML = `
+                    <span>${tarefa.descricao}</span>
+                    <button class="btn-delete" data-id="${docSnap.id}">Excluir</button>
+                `;
+                listaUl.appendChild(li);
+            });
+
+            // 3. DELETAR TAREFA
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.onclick = async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    await deleteDoc(doc(db, "tarefas", id));
+                };
+            });
+        });
     </script>
 </body>
 </html>
