@@ -3,19 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Login</title>
+    <title>Gestão Familiar Pro</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
         .hidden { display: none; }
-        .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center; font-weight: bold; }
-        .user-info img { width: 40px; border-radius: 50%; }
-        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        #btnLogin { background: white; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        #btnSalvar { background: #1a73e8; color: white; }
-        .tarefa-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-        .concluida { text-decoration: line-through; color: gray; }
+        h1 { color: #1a73e8; text-align: center; font-size: 1.6rem; margin-top: 0; }
+        
+        /* Cabeçalho do Usuário */
+        .user-header { display: flex; align-items: center; justify-content: space-between; background: #e8f0fe; padding: 10px 15px; border-radius: 12px; margin-bottom: 20px; }
+        .user-info { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; }
+        .user-info img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid white; }
+        
+        /* Formulário */
+        .input-group { display: flex; gap: 8px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 12px; outline: none; transition: 0.3s; }
+        input:focus { border-color: #1a73e8; }
+        #btnSalvar { background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; }
+
+        /* Lista de Tarefas */
+        #listaTarefas { list-style: none; padding: 0; }
+        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f0f0f0; animation: fadeIn 0.3s ease; }
+        .tarefa-main { display: flex; align-items: center; gap: 12px; }
+        .foto-autor { width: 30px; height: 30px; border-radius: 50%; }
+        .texto-tarefa { font-size: 1rem; color: #333; }
+        .concluida { text-decoration: line-through; color: #bbb; }
+        .btn-delete { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
+
+        /* Login */
+        #btnLogin { width: 100%; background: white; border: 2px solid #eee; padding: 15px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -23,7 +41,7 @@
     <div class="container">
         <div id="telaLogin">
             <h1>🏠 Gestão Familiar</h1>
-            <p>Entre para organizar sua casa</p>
+            <p style="text-align: center; color: #666;">Organize as tarefas da casa de forma simples e segura.</p>
             <button id="btnLogin">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
                 Entrar com Google
@@ -31,16 +49,20 @@
         </div>
 
         <div id="telaApp" class="hidden">
-            <div class="user-info">
-                <img id="userPhoto" src="">
-                <span id="userName"></span>
-                <button id="btnLogout" style="width: auto; padding: 5px 10px; background: #eee;">Sair</button>
+            <div class="user-header">
+                <div class="user-info">
+                    <img id="userPhoto" src="">
+                    <span id="userName"></span>
+                </div>
+                <button id="btnLogout" style="background:none; border:none; color:#666; cursor:pointer; font-size:0.8rem;">Sair</button>
             </div>
-            
-            <input type="text" id="inputTarefa" placeholder="Nova tarefa...">
-            <button id="btnSalvar">Adicionar</button>
 
-            <ul id="listaTarefas" style="list-style: none; padding: 0;"></ul>
+            <div class="input-group">
+                <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
+                <button id="btnSalvar">Add</button>
+            </div>
+
+            <ul id="listaTarefas"></ul>
         </div>
     </div>
 
@@ -63,22 +85,18 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // ELEMENTOS
         const telaLogin = document.getElementById('telaLogin');
         const telaApp = document.getElementById('telaApp');
-        const btnLogin = document.getElementById('btnLogin');
-        const btnLogout = document.getElementById('btnLogout');
 
-        // LOGIN E LOGOUT
-        btnLogin.onclick = () => signInWithPopup(auth, provider);
-        btnLogout.onclick = () => signOut(auth);
+        // LOGIN / LOGOUT
+        document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
+        document.getElementById('btnLogout').onclick = () => signOut(auth);
 
-        // OBSERVADOR DE USUÁRIO (Mágica do Login)
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 telaLogin.classList.add('hidden');
                 telaApp.classList.remove('hidden');
-                document.getElementById('userName').innerText = user.displayName;
+                document.getElementById('userName').innerText = user.displayName.split(' ')[0]; // Só o primeiro nome
                 document.getElementById('userPhoto').src = user.photoURL;
                 carregarTarefas();
             } else {
@@ -86,6 +104,21 @@
                 telaApp.classList.add('hidden');
             }
         });
+
+        // SALVAR
+        document.getElementById('btnSalvar').onclick = async () => {
+            const input = document.getElementById('inputTarefa');
+            if (input.value && auth.currentUser) {
+                await addDoc(collection(db, "tarefas"), {
+                    descricao: input.value,
+                    autorNome: auth.currentUser.displayName,
+                    autorFoto: auth.currentUser.photoURL, // SALVANDO A FOTO
+                    concluida: false,
+                    dataCriacao: new Date()
+                });
+                input.value = "";
+            }
+        };
 
         function carregarTarefas() {
             const q = query(collection(db, "tarefas"), orderBy("dataCriacao", "desc"));
@@ -97,29 +130,26 @@
                     const li = document.createElement('li');
                     li.className = 'tarefa-item';
                     li.innerHTML = `
-                        <span class="${t.concluida ? 'concluida' : ''}">${t.descricao} <br> <small>por: ${t.autor}</small></span>
-                        <button onclick="window.excluirTarefa('${docSnap.id}')" style="width:auto; background:none; color:red;">X</button>
+                        <div class="tarefa-main">
+                            <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${docSnap.id}', this.checked)">
+                            <img src="${t.autorFoto || 'https://via.placeholder.com/30'}" class="foto-autor" title="${t.autorNome}">
+                            <span class="texto-tarefa ${t.concluida ? 'concluida' : ''}">${t.descricao}</span>
+                        </div>
+                        <button class="btn-delete" onclick="window.excluirTarefa('${docSnap.id}')">×</button>
                     `;
                     lista.appendChild(li);
                 });
             });
         }
 
-        document.getElementById('btnSalvar').onclick = async () => {
-            const input = document.getElementById('inputTarefa');
-            if (input.value) {
-                await addDoc(collection(db, "tarefas"), {
-                    descricao: input.value,
-                    autor: auth.currentUser.displayName,
-                    concluida: false,
-                    dataCriacao: new Date()
-                });
-                input.value = "";
-            }
+        window.toggleTarefa = async (id, status) => {
+            await updateDoc(doc(db, "tarefas", id), { concluida: status });
         };
 
         window.excluirTarefa = async (id) => {
-            await deleteDoc(doc(db, "tarefas", id));
+            if(confirm("Deseja excluir esta tarefa?")) {
+                await deleteDoc(doc(db, "tarefas", id));
+            }
         };
     </script>
 </body>
