@@ -1,38 +1,54 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão Familiar Pro</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; }
+        :root {
+            --bg: #f0f4f8; --card: #ffffff; --text: #333; --border: #edf2f7; --primary: #1a73e8;
+        }
+        body.dark-mode {
+            --bg: #1a202c; --card: #2d3748; --text: #f7fafc; --border: #4a5568; --primary: #63b3ed;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: 0.3s; }
+        .container { background: var(--card); padding: 2rem; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
         .hidden { display: none; }
-        h1 { color: #1a73e8; text-align: center; margin-top: 0; }
-        .user-header { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 15px; margin-bottom: 20px; }
-        .user-info { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; }
-        .user-info img { width: 30px; border-radius: 50%; }
+        
+        /* Barra de Progresso */
+        .progress-container { background: #eee; border-radius: 10px; height: 10px; margin: 15px 0; overflow: hidden; }
+        #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.5s; }
+
+        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .user-info { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .user-info img { width: 35px; border-radius: 50%; }
+
         .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-        input, select { padding: 12px; border: 2px solid #edf2f7; border-radius: 12px; font-size: 1rem; outline: none; }
-        #btnSalvar { background: #1a73e8; color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; }
-        .filtros { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
-        .filtro-btn { background: #fff; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; }
-        .filtro-btn.active { background: #1a73e8; color: white; }
-        #listaTarefas { list-style: none; padding: 0; }
-        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f7fafc; background: #fff; border-radius: 10px; margin-bottom: 5px; }
-        .tarefa-main { display: flex; align-items: center; gap: 10px; }
-        .tag { font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; background: #edf2f7; color: #4a5568; font-weight: bold; }
+        input, select { padding: 12px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
+        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; }
+
+        .filtros { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 10px; }
+        .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); position: relative; }
+        .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .badge { font-size: 0.7rem; margin-left: 5px; opacity: 0.8; }
+
+        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); transition: 0.3s; }
+        .tarefa-main { display: flex; align-items: center; gap: 12px; }
+        .info-data { font-size: 0.7rem; color: #a0aec0; margin-top: 4px; display: block; }
+        .tag { font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; background: var(--border); font-weight: bold; }
         .concluida { opacity: 0.4; }
         .concluida span { text-decoration: line-through; }
-        .foto-autor { width: 25px; height: 25px; border-radius: 50%; }
-        #btnLogin { width: 100%; background: #fff; border: 2px solid #eee; padding: 15px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; }
+        .foto-autor { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--primary); }
+        
+        #btnDarkMode { cursor: pointer; font-size: 1.2rem; background: none; border: none; }
+        #btnLogin { width: 100%; background: white; border: 2px solid #eee; padding: 15px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div id="telaLogin">
-            <h1>🏠 Gestão Familiar</h1>
+            <h1 style="text-align:center; color: #1a73e8;">🏠 Gestão Familiar</h1>
             <button id="btnLogin">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
                 Entrar com Google
@@ -45,28 +61,32 @@
                     <img id="userPhoto" src="">
                     <span id="userName"></span>
                 </div>
-                <button id="btnLogout" style="border:none; background:none; color:red; cursor:pointer; font-size: 0.8rem;">Sair</button>
+                <div>
+                    <button id="btnDarkMode">🌙</button>
+                    <button id="btnLogout" style="color:red; border:none; background:none; cursor:pointer;">Sair</button>
+                </div>
             </div>
 
+            <div class="progress-container"><div id="progressBar"></div></div>
+
             <div class="form-group">
-                <select id="selectCategoria">
-                    <option value="Geral">📂 Geral</option>
-                    <option value="Mercado">🛒 Mercado</option>
-                    <option value="Faxina">🧹 Faxina</option>
-                    <option value="Pet">🐾 Pet</option>
-                </select>
+                <div style="display: flex; gap: 5px;">
+                    <select id="selectCategoria" style="flex: 1;">
+                        <option value="Geral">📂 Geral</option>
+                        <option value="Mercado">🛒 Mercado</option>
+                        <option value="Faxina">🧹 Faxina</option>
+                        <option value="Pet">🐾 Pet</option>
+                    </select>
+                    <input type="date" id="inputData" style="flex: 1;">
+                </div>
                 <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
                 <button id="btnSalvar">Adicionar Tarefa</button>
             </div>
 
-            <div class="filtros">
-                <button class="filtro-btn active" onclick="window.filtrar('Tudo', this)">Tudo</button>
-                <button class="filtro-btn" onclick="window.filtrar('Mercado', this)">🛒 Mercado</button>
-                <button class="filtro-btn" onclick="window.filtrar('Faxina', this)">🧹 Faxina</button>
-                <button class="filtro-btn" onclick="window.filtrar('Pet', this)">🐾 Pet</button>
-            </div>
+            <div class="filtros" id="filtrosContainer">
+                </div>
 
-            <ul id="listaTarefas"></ul>
+            <ul id="listaTarefas" style="padding:0; list-style:none;"></ul>
         </div>
     </div>
 
@@ -76,7 +96,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
@@ -92,94 +112,121 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        let categoriaAtual = "Tudo";
+        let categoriaAtiva = "Tudo";
+        let tarefasGlobais = [];
 
-        // LOGIN COM REDIRECIONAMENTO
+        // DARK MODE
+        document.getElementById('btnDarkMode').onclick = () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('btnDarkMode').innerText = isDark ? '☀️' : '🌙';
+        };
+
+        // AUTH
         document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
-        // MONITORAR ESTADO DE LOGIN
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('telaLogin').classList.add('hidden');
                 document.getElementById('telaApp').classList.remove('hidden');
                 document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                 document.getElementById('userPhoto').src = user.photoURL;
-                carregarTarefas();
+                escutarTarefas();
             } else {
                 document.getElementById('telaLogin').classList.remove('hidden');
                 document.getElementById('telaApp').classList.add('hidden');
             }
         });
 
-        // DESBLOQUEIO DE ÁUDIO
-        const desbloquearAudio = () => {
-            const som = document.getElementById('somCheck');
-            som.play().then(() => { som.pause(); som.currentTime = 0; }).catch(() => {});
-            document.removeEventListener('click', desbloquearAudio);
-        };
-        document.addEventListener('click', desbloquearAudio);
-
+        // ADICIONAR TAREFA
         document.getElementById('btnSalvar').onclick = async () => {
-            const input = document.getElementById('inputTarefa');
+            const desc = document.getElementById('inputTarefa');
             const cat = document.getElementById('selectCategoria').value;
-            if (input.value) {
+            const data = document.getElementById('inputData').value;
+            if (desc.value) {
                 await addDoc(collection(db, "tarefas"), {
-                    descricao: input.value,
+                    descricao: desc.value,
                     categoria: cat,
+                    dataLimite: data,
                     autorFoto: auth.currentUser.photoURL,
                     concluida: false,
-                    dataCriacao: new Date()
+                    criadoEm: new Date()
                 });
-                input.value = "";
+                desc.value = "";
             }
         };
 
-        window.filtrar = (cat, btn) => {
-            categoriaAtual = cat;
-            document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            carregarTarefas();
+        function escutarTarefas() {
+            const q = query(collection(db, "tarefas"), orderBy("criadoEm", "desc"));
+            onSnapshot(q, (snapshot) => {
+                tarefasGlobais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderizarApp();
+            });
+        }
+
+        window.mudarFiltro = (cat) => {
+            categoriaAtiva = cat;
+            renderizarApp();
         };
 
-        function carregarTarefas() {
-            const q = query(collection(db, "tarefas"), orderBy("dataCriacao", "desc"));
-            onSnapshot(q, (snapshot) => {
-                const lista = document.getElementById('listaTarefas');
-                lista.innerHTML = "";
-                snapshot.forEach(docSnap => {
-                    const t = docSnap.data();
-                    if (categoriaAtual !== "Tudo" && t.categoria !== categoriaAtual) return;
-                    const li = document.createElement('li');
-                    li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
-                    li.innerHTML = `
-                        <div class="tarefa-main">
-                            <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${docSnap.id}', this.checked)">
-                            <img src="${t.autorFoto}" class="foto-autor">
-                            <div>
-                                <span class="tag">${t.categoria}</span><br>
-                                <span>${t.descricao}</span>
-                            </div>
-                        </div>
-                        <button onclick="window.excluirTarefa('${docSnap.id}')" style="background:none; border:none; color:#ddd; cursor:pointer;">🗑️</button>
-                    `;
-                    lista.appendChild(li);
-                });
+        function renderizarApp() {
+            const lista = document.getElementById('listaTarefas');
+            const filtrosDiv = document.getElementById('filtrosContainer');
+            lista.innerHTML = "";
+            
+            // Contadores
+            const contagem = { Tudo: tarefasGlobais.length };
+            tarefasGlobais.forEach(t => {
+                contagem[t.categoria] = (contagem[t.categoria] || 0) + 1;
             });
+
+            // Renderizar Filtros
+            const cats = ["Tudo", "Geral", "Mercado", "Faxina", "Pet"];
+            filtrosDiv.innerHTML = cats.map(c => `
+                <button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">
+                    ${c} <span class="badge">${contagem[c] || 0}</span>
+                </button>
+            `).join('');
+
+            // Renderizar Lista
+            const tarefasFiltradas = tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva);
+            tarefasFiltradas.forEach(t => {
+                const li = document.createElement('li');
+                li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
+                li.innerHTML = `
+                    <div class="tarefa-main">
+                        <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
+                        <img src="${t.autorFoto}" class="foto-autor">
+                        <div>
+                            <span class="tag">${t.categoria}</span>
+                            <span>${t.descricao}</span>
+                            ${t.dataLimite ? `<span class="info-data">📅 Expira em: ${t.dataLimite}</span>` : ''}
+                        </div>
+                    </div>
+                    <button onclick="window.eliminar('${t.id}')" style="border:none; background:none; cursor:pointer; opacity:0.3;">🗑️</button>
+                `;
+                lista.appendChild(li);
+            });
+
+            // Atualizar Barra de Progresso
+            const concluidas = tarefasGlobais.filter(t => t.concluida).length;
+            const percentual = tarefasGlobais.length ? (concluidas / tarefasGlobais.length) * 100 : 0;
+            document.getElementById('progressBar').style.width = percentual + "%";
         }
 
         window.toggleTarefa = async (id, status) => {
             if (status) {
                 const som = document.getElementById('somCheck');
-                try { som.currentTime = 0; await som.play(); } catch (e) {}
+                som.currentTime = 0;
+                som.play().catch(() => {});
                 confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             }
             await updateDoc(doc(db, "tarefas", id), { concluida: status });
         };
 
-        window.excluirTarefa = async (id) => {
-            if(confirm("Excluir tarefa?")) await deleteDoc(doc(db, "tarefas", id));
-        };
+        window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
     </script>
 </body>
 </html>
+
