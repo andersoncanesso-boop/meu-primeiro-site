@@ -3,57 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar Pro</title>
+    <title>Gestão Familiar Pro - Enterprise</title>
     <style>
-        :root {
-            --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; --primary: #2563eb;
-        }
-        body.dark-mode {
-            --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #3b82f6;
-        }
+        :root { --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; --primary: #2563eb; }
+        body.dark-mode { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #3b82f6; }
         body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: background 0.3s; }
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; }
         .hidden { display: none; }
         
-        /* Dashboard de Progresso */
+        /* Dashboard */
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* Cabeçalho */
         .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
-        .user-info { display: flex; align-items: center; gap: 10px; }
         .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
 
-        /* Formulário de Tarefa */
-        .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 25px; }
+        /* Backup Area */
+        .backup-section { display: flex; gap: 10px; margin-bottom: 20px; padding: 10px; background: #f1f5f9; border-radius: 12px; justify-content: center; }
+        .btn-backup { font-size: 0.75rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; border: 1px solid #cbd5e1; background: white; font-weight: bold; }
+
+        /* Form */
+        .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
+        .edit-mode { border-color: #f59e0b; background: #fffbeb; }
         .form-group { display: flex; flex-direction: column; gap: 10px; }
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
-        input:focus { border-color: var(--primary); }
-        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
 
-        /* Filtros por Categoria */
-        .filtros { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        /* Filters */
+        .filtros { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Lista de Tarefas */
+        /* List */
         #listaTarefas { list-style: none; padding: 0; }
-        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); transition: 0.2s; }
-        .tarefa-item:hover { background: rgba(0,0,0,0.02); }
-        .tarefa-main { display: flex; align-items: center; gap: 15px; }
-        .info-container { display: flex; flex-direction: column; }
-        .tag-cat { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--primary); }
-        .data-limite { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
-        
-        /* Botões */
-        #btnDarkMode { background: none; border: none; font-size: 1.4rem; cursor: pointer; }
-        .btn-excluir { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; }
-        .btn-excluir:hover { color: #ef4444; }
-        
-        #btnLogin { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid #ddd; background: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .acoes { display: flex; gap: 15px; }
     </style>
 </head>
 <body>
@@ -61,32 +48,26 @@
     <div class="container">
         <div id="telaLogin">
             <h1 style="text-align:center; color: #2563eb;">🏠 Gestão Familiar</h1>
-            <p style="text-align:center; color: #64748b; margin-bottom: 30px;">A sua casa organizada em um só lugar.</p>
-            <button id="btnLogin">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-                Entrar com Google
-            </button>
+            <button id="btnLogin" style="width:100%; padding:16px; border-radius:12px; background:white; border:1px solid #ddd; font-weight:bold; cursor:pointer;">Entrar com Google</button>
         </div>
 
         <div id="telaApp" class="hidden">
             <div class="user-header">
-                <div class="user-info">
-                    <img id="userPhoto" src="">
-                    <span id="userName" style="font-weight: bold;"></span>
-                </div>
-                <div>
-                    <button id="btnDarkMode">🌙</button>
-                    <button id="btnLogout" style="color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold; margin-left:10px;">Sair</button>
-                </div>
+                <div class="user-info"><img id="userPhoto" src=""> <span id="userName" style="font-weight: bold; margin-left: 10px;"></span></div>
+                <button id="btnDarkMode" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">🌙</button>
+                <button id="btnLogout" style="color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold;">Sair</button>
             </div>
 
-            <div class="progress-header">
-                <span>Progresso do Dia</span>
-                <span id="txtPercentual">0%</span>
+            <div class="backup-section">
+                <button class="btn-backup" onclick="window.exportarBackup()">📥 Exportar Backup</button>
+                <button class="btn-backup" onclick="document.getElementById('inputFile').click()">📤 Restaurar</button>
+                <input type="file" id="inputFile" class="hidden" accept=".json" onchange="window.importarBackup(event)">
             </div>
+
+            <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
             <div class="progress-container"><div id="progressBar"></div></div>
 
-            <div class="form-card">
+            <div class="form-card" id="formCard">
                 <div class="form-group">
                     <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
                     <div style="display: flex; gap: 8px;">
@@ -95,10 +76,15 @@
                             <option value="Mercado">🛒 Mercado</option>
                             <option value="Faxina">🧹 Faxina</option>
                             <option value="Pet">🐾 Pet</option>
+                            <option value="Manutenção">🛠️ Manutenção</option>
+                            <option value="Saúde">💊 Saúde</option>
+                            <option value="Finanças">💰 Finanças</option>
+                            <option value="Lazer">🍕 Lazer</option>
                         </select>
                         <input type="date" id="inputData" style="flex: 1;">
                     </div>
                     <button id="btnSalvar">Adicionar Tarefa</button>
+                    <button id="btnCancelarEdicao" class="hidden" style="background:#94a3b8; color:white; border:none; padding:10px; border-radius:10px; cursor:pointer; margin-top:5px;">Cancelar Edição</button>
                 </div>
             </div>
 
@@ -108,11 +94,11 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <audio id="somCheck" src="https://actions.google.com/sounds/v1/foley/beeps_and_bloops_glitchy_digital_ui.ogg" preload="auto"></audio>
+    <audio id="somCheck" src="https://actions.google.com/sounds/v1/foley/beeps_and_bloops_glitchy_digital_ui.ogg"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -131,14 +117,9 @@
 
         let categoriaAtiva = "Tudo";
         let tarefasGlobais = [];
+        let idEdicao = null;
 
-        // Modo Escuro
-        document.getElementById('btnDarkMode').onclick = () => {
-            document.body.classList.toggle('dark-mode');
-            document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-        };
-
-        // Login/Logout
+        // AUTH
         document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
@@ -146,7 +127,7 @@
             if (user) {
                 document.getElementById('telaLogin').classList.add('hidden');
                 document.getElementById('telaApp').classList.remove('hidden');
-                document.getElementById('userName').innerText = user.displayName;
+                document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                 document.getElementById('userPhoto').src = user.photoURL;
                 document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
                 escutarTarefas();
@@ -156,24 +137,7 @@
             }
         });
 
-        // Adicionar Tarefa
-        document.getElementById('btnSalvar').onclick = async () => {
-            const desc = document.getElementById('inputTarefa');
-            const cat = document.getElementById('selectCategoria').value;
-            const data = document.getElementById('inputData').value;
-            if (desc.value) {
-                await addDoc(collection(db, "tarefas"), {
-                    descricao: desc.value,
-                    categoria: cat,
-                    dataLimite: data,
-                    autorFoto: auth.currentUser.photoURL,
-                    concluida: false,
-                    criadoEm: new Date()
-                });
-                desc.value = "";
-            }
-        };
-
+        // ESCUTAR BANCO
         function escutarTarefas() {
             onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snapshot) => {
                 tarefasGlobais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -181,41 +145,125 @@
             });
         }
 
+        // SALVAR / EDITAR
+        document.getElementById('btnSalvar').onclick = async () => {
+            const desc = document.getElementById('inputTarefa');
+            const cat = document.getElementById('selectCategoria');
+            const data = document.getElementById('inputData');
+
+            if (!desc.value) return;
+
+            if (idEdicao) {
+                await updateDoc(doc(db, "tarefas", idEdicao), {
+                    descricao: desc.value, categoria: cat.value, dataLimite: data.value
+                });
+                limparForm();
+            } else {
+                await addDoc(collection(db, "tarefas"), {
+                    descricao: desc.value, categoria: cat.value, dataLimite: data.value,
+                    autorFoto: auth.currentUser.photoURL, concluida: false, criadoEm: new Date()
+                });
+                desc.value = "";
+            }
+        };
+
+        // EXPORTAR BACKUP (JSON)
+        window.exportarBackup = () => {
+            if (tarefasGlobais.length === 0) return alert("Nenhuma tarefa para exportar.");
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "backup_gestao_familiar.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        };
+
+        // IMPORTAR BACKUP EM LOTE (BATCH)
+        window.importarBackup = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const tarefasImportadas = JSON.parse(e.target.result);
+                    const batch = writeBatch(db);
+                    
+                    tarefasImportadas.forEach(t => {
+                        const newDocRef = doc(collection(db, "tarefas"));
+                        batch.set(newDocRef, {
+                            descricao: t.descricao,
+                            categoria: t.categoria,
+                            dataLimite: t.dataLimite,
+                            autorFoto: auth.currentUser.photoURL,
+                            concluida: t.concluida || false,
+                            criadoEm: new Date()
+                        });
+                    });
+
+                    await batch.commit();
+                    alert("Restauração concluída com sucesso!");
+                } catch (err) {
+                    alert("Erro ao importar arquivo. Verifique se o formato está correto.");
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        // FUNÇÕES DE SUPORTE
+        window.toggleTarefa = async (id, s) => {
+            if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
+            await updateDoc(doc(db, "tarefas", id), { concluida: s });
+        };
+
+        window.prepararEdicao = (id, desc, cat, data) => {
+            idEdicao = id;
+            document.getElementById('inputTarefa').value = desc;
+            document.getElementById('selectCategoria').value = cat;
+            document.getElementById('inputData').value = data;
+            document.getElementById('btnSalvar').innerText = "Salvar Alteração";
+            document.getElementById('formCard').classList.add('edit-mode');
+            document.getElementById('btnCancelarEdicao').classList.remove('hidden');
+        };
+
+        function limparForm() {
+            idEdicao = null;
+            document.getElementById('inputTarefa').value = "";
+            document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
+            document.getElementById('formCard').classList.remove('edit-mode');
+            document.getElementById('btnCancelarEdicao').classList.add('hidden');
+        }
+
+        window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
         window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
 
         function renderizar() {
             const lista = document.getElementById('listaTarefas');
             const filtrosDiv = document.getElementById('filtrosContainer');
             lista.innerHTML = "";
+            
+            const cats = ["Tudo", "Geral", "Mercado", "Faxina", "Pet", "Manutenção", "Saúde", "Finanças", "Lazer"];
+            filtrosDiv.innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
 
-            // Filtros
-            const cats = ["Tudo", "Geral", "Mercado", "Faxina", "Pet"];
-            filtrosDiv.innerHTML = cats.map(c => `
-                <button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>
-            `).join('');
-
-            // Lista de Tarefas
-            const filtradas = tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva);
-            filtradas.forEach(t => {
-                const dataFmt = t.dataLimite ? t.dataLimite.split('-').reverse().join('/') : "--/--/--";
+            tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
                 li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
                 li.innerHTML = `
                     <div class="tarefa-main">
                         <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
-                        <img src="${t.autorFoto}" style="width:25px; border-radius:50%;">
                         <div class="info-container">
                             <span class="tag-cat">${t.categoria}</span>
                             <span class="texto-tarefa" style="font-weight:600;">${t.descricao}</span>
-                            <span class="data-limite">📅 Até: ${dataFmt}</span>
                         </div>
                     </div>
-                    <button class="btn-excluir" onclick="window.eliminar('${t.id}')">🗑️</button>
-                `;
+                    <div class="acoes">
+                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}')">✏️</button>
+                        <button style="background:none; border:none; cursor:pointer;" onclick="window.eliminar('${t.id}')">🗑️</button>
+                    </div>`;
                 lista.appendChild(li);
             });
 
-            // Atualizar Progresso
             const total = tarefasGlobais.length;
             const feitas = tarefasGlobais.filter(t => t.concluida).length;
             const porc = total > 0 ? Math.round((feitas / total) * 100) : 0;
@@ -223,15 +271,10 @@
             document.getElementById('txtPercentual').innerText = porc + "%";
         }
 
-        window.toggleTarefa = async (id, s) => {
-            if (s) {
-                document.getElementById('somCheck').play().catch(() => {});
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            }
-            await updateDoc(doc(db, "tarefas", id), { concluida: s });
+        document.getElementById('btnDarkMode').onclick = () => {
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
         };
-
-        window.eliminar = async (id) => { if(confirm("Deseja apagar esta tarefa?")) await deleteDoc(doc(db, "tarefas", id)); };
     </script>
 </body>
 </html>
