@@ -3,88 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Colaborativo</title>
+    <title>Gestão Familiar Pro</title>
     <style>
-        :root { --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --primary: #2563eb; --whatsapp: #22c55e; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .container { background: var(--card); padding: 20px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; }
+        :root {
+            --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; --primary: #2563eb;
+        }
+        body.dark-mode {
+            --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #3b82f6;
+        }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: background 0.3s; }
+        .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; }
         .hidden { display: none; }
         
-        /* Header */
-        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
-        .user-info img { width: 35px; border-radius: 50%; border: 2px solid var(--primary); }
+        /* Dashboard de Progresso */
+        .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
+        .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
+        #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* Form */
-        .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 15px; border-radius: 18px; }
-        input, select { padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 1rem; outline: none; }
-        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        /* Cabeçalho */
+        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
 
-        /* Lista */
-        .tarefa-card { background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 16px; margin-bottom: 12px; position: relative; }
-        .status-concluido { opacity: 0.5; background: #f8fafc; }
-        .status-concluido .desc { text-decoration: line-through; }
+        /* Formulário de Tarefa */
+        .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 25px; }
+        .form-group { display: flex; flex-direction: column; gap: 10px; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
+        input:focus { border-color: var(--primary); }
+        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+
+        /* Filtros por Categoria */
+        .filtros { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
+        .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Lista de Tarefas */
+        #listaTarefas { list-style: none; padding: 0; }
+        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .tarefa-item:hover { background: rgba(0,0,0,0.02); }
+        .tarefa-main { display: flex; align-items: center; gap: 15px; }
+        .info-container { display: flex; flex-direction: column; }
+        .tag-cat { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--primary); }
+        .data-limite { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+        .concluida { opacity: 0.4; }
+        .concluida .texto-tarefa { text-decoration: line-through; }
         
-        .badge-cat { font-size: 0.7rem; font-weight: bold; background: #e2e8f0; padding: 2px 8px; border-radius: 10px; }
-        .autor-foto { width: 20px; height: 20px; border-radius: 50%; vertical-align: middle; }
-
-        /* Botões de Notificação */
-        .btn-whats { display: inline-flex; align-items: center; gap: 5px; background: var(--whatsapp); color: white; text-decoration: none; padding: 8px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; margin-top: 10px; }
-        .btn-excluir { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; cursor: pointer; font-size: 1.2rem; }
+        /* Botões */
+        #btnDarkMode { background: none; border: none; font-size: 1.4rem; cursor: pointer; }
+        .btn-excluir { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; }
+        .btn-excluir:hover { color: #ef4444; }
+        
+        #btnLogin { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid #ddd; background: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div id="telaLogin">
-            <h1 style="text-align:center;">🏠 Gestão Familiar</h1>
-            <button id="btnLogin" style="width:100%; padding:15px; border-radius:12px; cursor:pointer; background:white; border:1px solid #ddd; font-weight:bold;">Entrar com Google</button>
+            <h1 style="text-align:center; color: #2563eb;">🏠 Gestão Familiar</h1>
+            <p style="text-align:center; color: #64748b; margin-bottom: 30px;">A sua casa organizada em um só lugar.</p>
+            <button id="btnLogin">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+                Entrar com Google
+            </button>
         </div>
 
         <div id="telaApp" class="hidden">
             <div class="user-header">
                 <div class="user-info">
                     <img id="userPhoto" src="">
-                    <span id="userName" style="font-weight:bold; margin-left:10px;"></span>
+                    <span id="userName" style="font-weight: bold;"></span>
                 </div>
-                <button id="btnLogout" style="color:#64748b; background:none; border:none; cursor:pointer;">Sair</button>
+                <div>
+                    <button id="btnDarkMode">🌙</button>
+                    <button id="btnLogout" style="color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold; margin-left:10px;">Sair</button>
+                </div>
             </div>
 
-            <div class="form-group">
-                <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
-                <div style="display:flex; gap:5px;">
-                    <select id="selectMembro" style="flex:1;">
-                        <option value="">👤 Para quem?</option>
-                        <option value="Anderson">Anderson</option>
-                        <option value="Esposa">Esposa</option>
-                        <option value="Filho">Filho</option>
-                    </select>
-                    <select id="selectCategoria" style="flex:1;">
-                        <option value="Geral">📂 Geral</option>
-                        <option value="Mercado">🛒 Mercado</option>
-                        <option value="Pet">🐾 Pet</option>
-                    </select>
+            <div class="progress-header">
+                <span>Progresso do Dia</span>
+                <span id="txtPercentual">0%</span>
+            </div>
+            <div class="progress-container"><div id="progressBar"></div></div>
+
+            <div class="form-card">
+                <div class="form-group">
+                    <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
+                    <div style="display: flex; gap: 8px;">
+                        <select id="selectCategoria" style="flex: 1;">
+                            <option value="Geral">📂 Geral</option>
+                            <option value="Mercado">🛒 Mercado</option>
+                            <option value="Faxina">🧹 Faxina</option>
+                            <option value="Pet">🐾 Pet</option>
+                        </select>
+                        <input type="date" id="inputData" style="flex: 1;">
+                    </div>
+                    <button id="btnSalvar">Adicionar Tarefa</button>
                 </div>
-                <input type="date" id="inputData">
-                <button id="btnSalvar">Salvar Tarefa</button>
             </div>
 
-            <div id="listaTarefas"></div>
+            <div class="filtros" id="filtrosContainer"></div>
+            <ul id="listaTarefas"></ul>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <audio id="somCheck" src="https://actions.google.com/sounds/v1/foley/beeps_and_bloops_glitchy_digital_ui.ogg" preload="auto"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        // CONFIGURAÇÃO DOS CONTATOS (MUDE OS NÚMEROS AQUI)
-        const CONTATOS_FAMILIA = {
-            "Anderson": "5512991599107",
-            "Esposa": "5512981224329", // Exemplo, coloque o número real
-            "Filho": "5512900000000"
-        };
 
         const firebaseConfig = {
             apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
@@ -100,7 +129,16 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // Auth
+        let categoriaAtiva = "Tudo";
+        let tarefasGlobais = [];
+
+        // Modo Escuro
+        document.getElementById('btnDarkMode').onclick = () => {
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        };
+
+        // Login/Logout
         document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
@@ -118,20 +156,16 @@
             }
         });
 
-        // Salvar
+        // Adicionar Tarefa
         document.getElementById('btnSalvar').onclick = async () => {
             const desc = document.getElementById('inputTarefa');
-            const membro = document.getElementById('selectMembro').value;
             const cat = document.getElementById('selectCategoria').value;
             const data = document.getElementById('inputData').value;
-
             if (desc.value) {
                 await addDoc(collection(db, "tarefas"), {
                     descricao: desc.value,
-                    responsavel: membro,
                     categoria: cat,
                     dataLimite: data,
-                    autorNome: auth.currentUser.displayName,
                     autorFoto: auth.currentUser.photoURL,
                     concluida: false,
                     criadoEm: new Date()
@@ -142,46 +176,65 @@
 
         function escutarTarefas() {
             onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snapshot) => {
-                const lista = document.getElementById('listaTarefas');
-                lista.innerHTML = "";
-                snapshot.forEach(docSnap => {
-                    const t = docSnap.data();
-                    const dataFmt = t.dataLimite.split('-').reverse().join('/');
-                    const numero = CONTATOS_FAMILIA[t.responsavel] || "";
-                    
-                    const card = document.createElement('div');
-                    card.className = `tarefa-card ${t.concluida ? 'status-concluido' : ''}`;
-                    
-                    // Link do WhatsApp
-                    const msg = encodeURIComponent(`👉 *Tarefa para ${t.responsavel}:*\n\n- ${t.descricao}\n📅 Data: ${dataFmt}\n📌 Categoria: ${t.categoria}\n\n_Enviado pelo App Gestão Familiar_`);
-                    const whatsLink = numero ? `https://wa.me/${numero}?text=${msg}` : "#";
-
-                    card.innerHTML = `
-                        <button class="btn-excluir" onclick="window.eliminar('${docSnap.id}')">×</button>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${docSnap.id}', this.checked)">
-                            <div>
-                                <span class="badge-cat">${t.categoria}</span>
-                                <div class="desc" style="font-weight:bold; margin-top:5px;">${t.descricao}</div>
-                                <div style="font-size:0.75rem; color:#64748b; margin-top:3px;">
-                                    👤 Para: <b>${t.responsavel || 'Todos'}</b> | 📅 ${dataFmt}
-                                </div>
-                            </div>
-                        </div>
-                        ${numero && !t.concluida ? `<a href="${whatsLink}" target="_blank" class="btn-whats">📲 Notificar ${t.responsavel}</a>` : ''}
-                    `;
-                    lista.appendChild(card);
-                });
+                tarefasGlobais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderizar();
             });
         }
 
+        window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
+
+        function renderizar() {
+            const lista = document.getElementById('listaTarefas');
+            const filtrosDiv = document.getElementById('filtrosContainer');
+            lista.innerHTML = "";
+
+            // Filtros
+            const cats = ["Tudo", "Geral", "Mercado", "Faxina", "Pet"];
+            filtrosDiv.innerHTML = cats.map(c => `
+                <button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>
+            `).join('');
+
+            // Lista de Tarefas
+            const filtradas = tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva);
+            filtradas.forEach(t => {
+                const dataFmt = t.dataLimite ? t.dataLimite.split('-').reverse().join('/') : "--/--/--";
+                const li = document.createElement('li');
+                li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
+                li.innerHTML = `
+                    <div class="tarefa-main">
+                        <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
+                        <img src="${t.autorFoto}" style="width:25px; border-radius:50%;">
+                        <div class="info-container">
+                            <span class="tag-cat">${t.categoria}</span>
+                            <span class="texto-tarefa" style="font-weight:600;">${t.descricao}</span>
+                            <span class="data-limite">📅 Até: ${dataFmt}</span>
+                        </div>
+                    </div>
+                    <button class="btn-excluir" onclick="window.eliminar('${t.id}')">🗑️</button>
+                `;
+                lista.appendChild(li);
+            });
+
+            // Atualizar Progresso
+            const total = tarefasGlobais.length;
+            const feitas = tarefasGlobais.filter(t => t.concluida).length;
+            const porc = total > 0 ? Math.round((feitas / total) * 100) : 0;
+            document.getElementById('progressBar').style.width = porc + "%";
+            document.getElementById('txtPercentual').innerText = porc + "%";
+        }
+
         window.toggleTarefa = async (id, s) => {
-            if (s) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            if (s) {
+                document.getElementById('somCheck').play().catch(() => {});
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
             await updateDoc(doc(db, "tarefas", id), { concluida: s });
         };
-        window.eliminar = async (id) => { if(confirm("Apagar tarefa?")) await deleteDoc(doc(db, "tarefas", id)); };
+
+        window.eliminar = async (id) => { if(confirm("Deseja apagar esta tarefa?")) await deleteDoc(doc(db, "tarefas", id)); };
     </script>
 </body>
 </html>
+
 
 
