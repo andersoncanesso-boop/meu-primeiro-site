@@ -11,7 +11,6 @@
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
-        /* Dashboard */
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s; }
@@ -19,11 +18,9 @@
         .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
         .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
 
-        /* Backup Area */
         .backup-section { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         .btn-backup { font-size: 0.7rem; padding: 6px 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: bold; }
 
-        /* Filtros */
         .filtros-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 20px; gap: 5px; }
         .filtros { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 5px 0; flex: 1; }
         .filtros::-webkit-scrollbar { display: none; }
@@ -32,13 +29,11 @@
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Lista */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
         
-        /* Avatar do Autor */
         .autor-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; text-align: center; margin-right: 12px; }
         .autor-mini { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--primary); margin-bottom: 2px; }
         .autor-nome { font-size: 0.6rem; font-weight: bold; color: #64748b; white-space: nowrap; max-width: 60px; overflow: hidden; text-overflow: ellipsis; }
@@ -144,7 +139,7 @@
             if (user) {
                 document.getElementById('telaLogin').classList.add('hidden');
                 document.getElementById('telaApp').classList.remove('hidden');
-                document.getElementById('userName').innerText = user.displayName.split(' ')[0];
+                document.getElementById('userName').innerText = user.displayName ? user.displayName.split(' ')[0] : 'Eu';
                 document.getElementById('userPhoto').src = user.photoURL;
                 document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
                 escutarTarefas();
@@ -178,21 +173,31 @@
             const data = document.getElementById('inputData');
             if (!desc.value) return;
 
-            // CAPTURA O NOME ATUAL DO USUÁRIO GOOGLE LOGADO
-            const nomeGoogle = auth.currentUser.displayName.split(' ')[0];
-            const fotoGoogle = auth.currentUser.photoURL;
+            // CAPTURA BLINDADA DO NOME DO GOOGLE
+            const user = auth.currentUser;
+            let nomeParaSalvar = "Alguém";
+            
+            if (user) {
+                if (user.displayName) {
+                    nomeParaSalvar = user.displayName.split(' ')[0];
+                } else if (user.email) {
+                    nomeParaSalvar = user.email.split('@')[0];
+                }
+            }
+
+            const fotoParaSalvar = user ? user.photoURL : '';
 
             if (idEdicao) {
                 await updateDoc(doc(db, "tarefas", idEdicao), {
                     descricao: desc.value, categoria: cat.value, dataLimite: data.value,
-                    autorNome: nomeGoogle, autorFoto: fotoGoogle // Atualiza para quem editou por último
+                    autorNome: nomeParaSalvar, autorFoto: fotoParaSalvar
                 });
                 idEdicao = null;
                 document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
             } else {
                 await addDoc(collection(db, "tarefas"), { 
                     descricao: desc.value, categoria: cat.value, dataLimite: data.value, 
-                    autorFoto: fotoGoogle, autorNome: nomeGoogle, concluida: false, criadoEm: new Date() 
+                    autorFoto: fotoParaSalvar, autorNome: nomeParaSalvar, concluida: false, criadoEm: new Date() 
                 });
             }
             desc.value = "";
@@ -213,12 +218,12 @@
                     const ref = doc(collection(db, "tarefas"));
                     batch.set(ref, { 
                         descricao: t.descricao, categoria: t.categoria, dataLimite: t.dataLimite, 
-                        autorFoto: t.autorFoto || auth.currentUser.photoURL, 
-                        autorNome: t.autorNome || "...", concluida: t.concluida || false, criadoEm: new Date() 
+                        autorFoto: t.autorFoto || '', 
+                        autorNome: t.autorNome || "Autor", concluida: t.concluida || false, criadoEm: new Date() 
                     });
                 });
                 await batch.commit();
-                alert("Importado com sucesso!");
+                alert("Importado!");
             };
             reader.readAsText(file);
         };
@@ -279,5 +284,6 @@
     </script>
 </body>
 </html>
+
 
 
