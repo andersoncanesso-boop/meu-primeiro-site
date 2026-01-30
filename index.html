@@ -11,6 +11,7 @@
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
+        /* Dashboard e Progress */
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -29,14 +30,13 @@
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* Lista */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
-        
         .tarefa-main { display: flex; align-items: center; gap: 10px; }
         .autor-mini { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--primary); }
-        
         .info-container { display: flex; flex-direction: column; }
         .tag-cat { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--primary); }
         .data-tarefa { font-size: 0.75rem; color: #64748b; font-weight: 500; }
@@ -203,21 +203,26 @@
             const file = event.target.files[0];
             const reader = new FileReader();
             reader.onload = async (e) => {
-                const tarefas = JSON.parse(e.target.result);
-                const batch = writeBatch(db);
-                tarefas.forEach(t => {
-                    const ref = doc(collection(db, "tarefas"));
-                    batch.set(ref, { 
-                        descricao: t.descricao, 
-                        categoria: t.categoria, 
-                        dataLimite: t.dataLimite, 
-                        autorFoto: auth.currentUser.photoURL, 
-                        concluida: t.concluida || false, 
-                        criadoEm: new Date() 
+                try {
+                    const tarefas = JSON.parse(e.target.result);
+                    const batch = writeBatch(db);
+                    tarefas.forEach(t => {
+                        const ref = doc(collection(db, "tarefas"));
+                        // LOGICA CORRIGIDA: Mantém a foto do backup se existir, senão usa a do logado
+                        batch.set(ref, { 
+                            descricao: t.descricao, 
+                            categoria: t.categoria, 
+                            dataLimite: t.dataLimite, 
+                            autorFoto: t.autorFoto || auth.currentUser.photoURL, 
+                            concluida: t.concluida || false, 
+                            criadoEm: new Date() 
+                        });
                     });
-                });
-                await batch.commit();
-                alert("Restaurado com sucesso!");
+                    await batch.commit();
+                    alert("Restauração concluída com as fotos originais preservadas!");
+                } catch (err) {
+                    alert("Erro ao ler o arquivo de backup.");
+                }
             };
             reader.readAsText(file);
         };
@@ -252,7 +257,7 @@
                 li.innerHTML = `
                     <div class="tarefa-main">
                         <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
-                        <img src="${t.autorFoto || ''}" class="autor-mini" title="Inserido por você">
+                        <img src="${t.autorFoto || ''}" class="autor-mini">
                         <div class="info-container">
                             <span class="tag-cat">${t.categoria}</span>
                             <span class="texto-tarefa" style="font-weight:600;">${t.descricao}</span>
