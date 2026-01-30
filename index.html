@@ -3,33 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Projeto Mobile</title>
+    <title>Gestão Familiar - Teste Firebase</title>
     <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
-        }
-        .card {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 80%; /* Garante que não corte no celular */
-        }
-        h1 { color: #1a73e8; }
-        p { color: #5f6368; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #e8f0fe; }
+        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+        button { background-color: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #1557b0; }
+        #status { margin-top: 15px; color: green; font-weight: bold; }
     </style>
 </head>
 <body>
+
     <div class="card">
-        <h1>🚀 Está funcionando!</h1>
-        <p>Este site se adapta ao seu computador e ao seu celular.</p>
+        <h1>🏠 Gestão Familiar</h1>
+        <p>Clique no botão para testar a conexão com o Firebase:</p>
+        <button id="btnSalvar">Salvar Tarefa de Teste</button>
+        <div id="status"></div>
     </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Suas chaves que você acabou de me passar
+        const firebaseConfig = {
+            apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
+            authDomain: "gestao-familiar-ac7d6.firebaseapp.com",
+            projectId: "gestao-familiar-ac7d6",
+            storageBucket: "gestao-familiar-ac7d6.firebasestorage.app",
+            messagingSenderId: "1063581141078",
+            appId: "1:1063581141078:web:af2fc67412dbc6fee313f7"
+        };
+
+        // Inicializa o Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Função para salvar no banco de dados
+        document.getElementById('btnSalvar').onclick = async () => {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "Enviando...";
+            
+            try {
+                await addDoc(collection(db, "testes"), {
+                    item: "Lavar louça",
+                    data: new Date(),
+                    status: "Pendente"
+                });
+                statusDiv.innerText = "✅ Enviado com sucesso!";
+            } catch (e) {
+                console.error("Erro ao salvar: ", e);
+                statusDiv.innerText = "❌ Erro: Verifique se o Firestore está em 'Modo de Teste'";
+                statusDiv.style.color = "red";
+            }
+        };
+    </script>
 </body>
 </html>
