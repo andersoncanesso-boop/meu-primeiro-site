@@ -3,37 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar Pro</title>
+    <title>Gestão Familiar - Expert</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; }
         .hidden { display: none; }
-        h1 { color: #1a73e8; text-align: center; font-size: 1.6rem; margin-top: 0; }
+        h1 { color: #1a73e8; text-align: center; margin-top: 0; }
         
-        /* Cabeçalho do Usuário */
-        .user-header { display: flex; align-items: center; justify-content: space-between; background: #e8f0fe; padding: 10px 15px; border-radius: 12px; margin-bottom: 20px; }
-        .user-info { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; }
-        .user-info img { width: 35px; height: 35px; border-radius: 50%; border: 2px solid white; }
-        
-        /* Formulário */
-        .input-group { display: flex; gap: 8px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 12px; outline: none; transition: 0.3s; }
-        input:focus { border-color: #1a73e8; }
-        #btnSalvar { background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; }
+        .user-header { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 15px; margin-bottom: 20px; }
+        .user-info { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; }
+        .user-info img { width: 30px; border-radius: 50%; }
 
-        /* Lista de Tarefas */
+        /* Estilo do Formulário */
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        input, select { padding: 12px; border: 2px solid #edf2f7; border-radius: 12px; font-size: 1rem; outline: none; }
+        input:focus, select:focus { border-color: #1a73e8; }
+        #btnSalvar { background: #1a73e8; color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+
+        /* Lista e Categorias */
         #listaTarefas { list-style: none; padding: 0; }
-        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f0f0f0; animation: fadeIn 0.3s ease; }
-        .tarefa-main { display: flex; align-items: center; gap: 12px; }
-        .foto-autor { width: 30px; height: 30px; border-radius: 50%; }
-        .texto-tarefa { font-size: 1rem; color: #333; }
-        .concluida { text-decoration: line-through; color: #bbb; }
-        .btn-delete { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
-
-        /* Login */
-        #btnLogin { width: 100%; background: white; border: 2px solid #eee; padding: 15px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; }
+        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f7fafc; background: #fff; border-radius: 10px; margin-bottom: 5px; }
+        .tarefa-main { display: flex; align-items: center; gap: 10px; }
+        .tag { font-size: 0.65rem; padding: 3px 8px; border-radius: 20px; background: #edf2f7; color: #4a5568; font-weight: bold; text-transform: uppercase; }
+        .concluida { text-decoration: line-through; opacity: 0.5; }
+        .foto-autor { width: 25px; border-radius: 50%; }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #btnLogin { width: 100%; background: #fff; border: 2px solid #eee; padding: 15px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -41,7 +36,6 @@
     <div class="container">
         <div id="telaLogin">
             <h1>🏠 Gestão Familiar</h1>
-            <p style="text-align: center; color: #666;">Organize as tarefas da casa de forma simples e segura.</p>
             <button id="btnLogin">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
                 Entrar com Google
@@ -54,17 +48,26 @@
                     <img id="userPhoto" src="">
                     <span id="userName"></span>
                 </div>
-                <button id="btnLogout" style="background:none; border:none; color:#666; cursor:pointer; font-size:0.8rem;">Sair</button>
+                <button id="btnLogout" style="border:none; background:none; color:red; cursor:pointer;">Sair</button>
             </div>
 
-            <div class="input-group">
+            <div class="form-group">
+                <select id="selectCategoria">
+                    <option value="Geral">📂 Geral</option>
+                    <option value="Mercado">🛒 Mercado</option>
+                    <option value="Faxina">🧹 Faxina</option>
+                    <option value="Pet">🐾 Pet</option>
+                    <option value="Trabalho">💼 Trabalho</option>
+                </select>
                 <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
-                <button id="btnSalvar">Add</button>
+                <button id="btnSalvar">Adicionar Tarefa</button>
             </div>
 
             <ul id="listaTarefas"></ul>
         </div>
     </div>
+
+    <audio id="somCheck" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -87,8 +90,8 @@
 
         const telaLogin = document.getElementById('telaLogin');
         const telaApp = document.getElementById('telaApp');
+        const som = document.getElementById('somCheck');
 
-        // LOGIN / LOGOUT
         document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
@@ -96,7 +99,7 @@
             if (user) {
                 telaLogin.classList.add('hidden');
                 telaApp.classList.remove('hidden');
-                document.getElementById('userName').innerText = user.displayName.split(' ')[0]; // Só o primeiro nome
+                document.getElementById('userName').innerText = user.displayName;
                 document.getElementById('userPhoto').src = user.photoURL;
                 carregarTarefas();
             } else {
@@ -105,14 +108,14 @@
             }
         });
 
-        // SALVAR
         document.getElementById('btnSalvar').onclick = async () => {
             const input = document.getElementById('inputTarefa');
-            if (input.value && auth.currentUser) {
+            const categoria = document.getElementById('selectCategoria');
+            if (input.value) {
                 await addDoc(collection(db, "tarefas"), {
                     descricao: input.value,
-                    autorNome: auth.currentUser.displayName,
-                    autorFoto: auth.currentUser.photoURL, // SALVANDO A FOTO
+                    categoria: categoria.value,
+                    autorFoto: auth.currentUser.photoURL,
                     concluida: false,
                     dataCriacao: new Date()
                 });
@@ -128,14 +131,17 @@
                 snapshot.forEach(docSnap => {
                     const t = docSnap.data();
                     const li = document.createElement('li');
-                    li.className = 'tarefa-item';
+                    li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
                     li.innerHTML = `
                         <div class="tarefa-main">
                             <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${docSnap.id}', this.checked)">
-                            <img src="${t.autorFoto || 'https://via.placeholder.com/30'}" class="foto-autor" title="${t.autorNome}">
-                            <span class="texto-tarefa ${t.concluida ? 'concluida' : ''}">${t.descricao}</span>
+                            <img src="${t.autorFoto}" class="foto-autor">
+                            <div>
+                                <span class="tag">${t.categoria || 'Geral'}</span><br>
+                                <span>${t.descricao}</span>
+                            </div>
                         </div>
-                        <button class="btn-delete" onclick="window.excluirTarefa('${docSnap.id}')">×</button>
+                        <button onclick="window.excluirTarefa('${docSnap.id}')" style="background:none; border:none; color:#ccc; cursor:pointer;">🗑️</button>
                     `;
                     lista.appendChild(li);
                 });
@@ -143,15 +149,13 @@
         }
 
         window.toggleTarefa = async (id, status) => {
+            if (status) som.play(); // TOCA O SOM SE MARCAR COMO OK
             await updateDoc(doc(db, "tarefas", id), { concluida: status });
         };
 
         window.excluirTarefa = async (id) => {
-            if(confirm("Deseja excluir esta tarefa?")) {
-                await deleteDoc(doc(db, "tarefas", id));
-            }
+            await deleteDoc(doc(db, "tarefas", id));
         };
     </script>
 </body>
 </html>
-
