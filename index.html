@@ -11,7 +11,6 @@
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
-        /* Dashboard e Progress */
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -53,8 +52,8 @@
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
         #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
         
-        /* Estilo do Alerta de Erro */
-        #statusLogin { text-align: center; color: #ef4444; font-size: 0.9rem; margin-top: 15px; font-weight: bold; min-height: 20px; }
+        /* ALERTA DE ERRO VISÍVEL */
+        #statusLogin { text-align: center; color: white; background: #ef4444; font-size: 0.85rem; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
@@ -62,8 +61,8 @@
     <div class="container">
         <div id="telaLogin">
             <h1 style="text-align:center; color: #2563eb;">🏠 Gestão Familiar</h1>
-            <button id="btnLogin" style="width:100%; padding:16px; border-radius:12px; background:white; border:1px solid #ddd; font-weight:bold; cursor:pointer;">Entrar com Google</button>
             <div id="statusLogin"></div>
+            <button id="btnLogin" style="width:100%; padding:16px; border-radius:12px; background:white; border:1px solid #ddd; font-weight:bold; cursor:pointer;">Entrar com Google</button>
         </div>
 
         <div id="telaApp" class="hidden">
@@ -84,7 +83,7 @@
             <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
             <div class="progress-container"><div id="progressBar"></div></div>
 
-            <div class="form-card" id="formCard">
+            <div class="form-card">
                 <div class="form-group">
                     <input type="text" id="inputNomeManual" placeholder="Seu nome (ex: Anderson)">
                     <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
@@ -153,6 +152,18 @@
         let tarefasGlobais = [];
         let idEdicao = null;
 
+        // VERIFICA SE HÁ ERRO NA URL AO CARREGAR
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('erro')) {
+                const alerta = document.getElementById('statusLogin');
+                alerta.style.display = 'block';
+                alerta.innerText = "🚫 Acesso Negado: E-mail não autorizado na Família Canesso.";
+                // Limpa a URL após 3 segundos
+                setTimeout(() => window.history.replaceState({}, document.title, window.location.pathname), 3000);
+            }
+        };
+
         document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
@@ -166,12 +177,13 @@
                     document.getElementById('userPhoto').src = user.photoURL;
                     document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
                     document.getElementById('inputNomeManual').value = user.displayName ? user.displayName.split(' ')[0] : 'Anderson';
-                    document.getElementById('statusLogin').innerText = "";
                     escutarTarefas();
                 } else {
-                    // MENSAGEM DE ERRO
-                    document.getElementById('statusLogin').innerText = "🚫 E-mail não autorizado na Família Canesso.";
+                    // SE NÃO TIVER ACESSO, DESLOGA E MANDA O ERRO PELA URL
                     await signOut(auth);
+                    if (!window.location.search.includes('erro')) {
+                        window.location.href = window.location.pathname + "?erro=bloqueado";
+                    }
                 }
             } else {
                 document.getElementById('telaLogin').classList.remove('hidden');
@@ -179,112 +191,75 @@
             }
         });
 
-        window.scrollFiltros = (valor) => {
-            document.getElementById('filtrosContainer').scrollBy({ left: valor, behavior: 'smooth' });
-        };
-
-        function formatarDataAmigavel(dataStr) {
-            if (!dataStr) return "";
-            const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-            const dataObj = new Date(dataStr + "T12:00:00");
-            return `${String(dataObj.getDate()).padStart(2, '0')}/${String(dataObj.getMonth() + 1).padStart(2, '0')} (${diasSemana[dataObj.getDay()]})`;
+        // Restante das funções de renderizar, salvar e backup...
+        window.scrollFiltros = (valor) => document.getElementById('filtrosContainer').scrollBy({ left: valor, behavior: 'smooth' });
+        function formatarDataAmigavel(d) {
+            if (!d) return "";
+            const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+            const obj = new Date(d + "T12:00:00");
+            return `${String(obj.getDate()).padStart(2, '0')}/${String(obj.getMonth() + 1).padStart(2, '0')} (${dias[obj.getDay()]})`;
         }
-
         function escutarTarefas() {
-            onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snapshot) => {
-                tarefasGlobais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snap) => {
+                tarefasGlobais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderizar();
             });
         }
-
         document.getElementById('btnSalvar').onclick = async () => {
-            const nomeManual = document.getElementById('inputNomeManual');
-            const desc = document.getElementById('inputTarefa');
-            const cat = document.getElementById('selectCategoria');
-            const data = document.getElementById('inputData');
-            
-            if (!desc.value) return;
-
-            const textoFormatado = desc.value.trim().charAt(0).toUpperCase() + desc.value.trim().slice(1);
-
-            const dados = {
-                descricao: textoFormatado, 
-                categoria: cat.value, 
-                dataLimite: data.value,
-                autorNome: nomeManual.value || "Alguém",
-                autorFoto: auth.currentUser.photoURL
-            };
-
+            const nome = document.getElementById('inputNomeManual').value;
+            const desc = document.getElementById('inputTarefa').value;
+            const cat = document.getElementById('selectCategoria').value;
+            const data = document.getElementById('inputData').value;
+            if (!desc) return;
+            const texto = desc.trim().charAt(0).toUpperCase() + desc.trim().slice(1);
             if (idEdicao) {
-                await updateDoc(doc(db, "tarefas", idEdicao), dados);
+                await updateDoc(doc(db, "tarefas", idEdicao), { descricao: texto, categoria: cat, dataLimite: data, autorNome: nome });
                 idEdicao = null;
                 document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
             } else {
-                await addDoc(collection(db, "tarefas"), { 
-                    ...dados,
-                    concluida: false, 
-                    criadoEm: new Date() 
-                });
+                await addDoc(collection(db, "tarefas"), { descricao: texto, categoria: cat, dataLimite: data, autorNome: nome, autorFoto: auth.currentUser.photoURL, concluida: false, criadoEm: new Date() });
             }
-            desc.value = "";
+            document.getElementById('inputTarefa').value = "";
         };
-
         window.exportarBackup = () => {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
-            const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "backup_familiar.json"); dl.click();
+            const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
+            const dl = document.createElement('a'); dl.setAttribute("href", str); dl.setAttribute("download", "backup_familiar.json"); dl.click();
         };
-
-        window.importarBackup = (event) => {
-            const file = event.target.files[0];
+        window.importarBackup = (ev) => {
             const reader = new FileReader();
             reader.onload = async (e) => {
-                try {
-                    const tarefas = JSON.parse(e.target.result);
-                    const batch = writeBatch(db);
-                    tarefas.forEach(t => {
-                        const ref = doc(collection(db, "tarefas"));
-                        batch.set(ref, { 
-                            descricao: t.descricao, 
-                            categoria: t.categoria, 
-                            dataLimite: t.dataLimite, 
-                            autorFoto: t.autorFoto || auth.currentUser.photoURL, 
-                            autorNome: t.autorNome || "Autor",
-                            concluida: t.concluida || false, 
-                            criadoEm: new Date() 
-                        });
-                    });
-                    await batch.commit();
-                    alert("Restauração concluída!");
-                } catch (err) { alert("Erro no backup."); }
+                const tarefas = JSON.parse(e.target.result);
+                const batch = writeBatch(db);
+                tarefas.forEach(t => {
+                    const ref = doc(collection(db, "tarefas"));
+                    batch.set(ref, { ...t, criadoEm: new Date() });
+                });
+                await batch.commit();
+                alert("Restaurado!");
             };
-            reader.readAsText(file);
+            reader.readAsText(ev.target.files[0]);
         };
-
         window.toggleTarefa = async (id, s) => {
             if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
             await updateDoc(doc(db, "tarefas", id), { concluida: s });
         };
-
-        window.prepararEdicao = (id, desc, cat, data, nome) => {
+        window.prepararEdicao = (id, d, c, dt, n) => {
             idEdicao = id;
-            document.getElementById('inputNomeManual').value = nome || "";
-            document.getElementById('inputTarefa').value = desc;
-            document.getElementById('selectCategoria').value = cat;
-            document.getElementById('inputData').value = data;
+            document.getElementById('inputNomeManual').value = n;
+            document.getElementById('inputTarefa').value = d;
+            document.getElementById('selectCategoria').value = c;
+            document.getElementById('inputData').value = dt;
             document.getElementById('btnSalvar').innerText = "Salvar Alteração";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
-
         window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
         window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
-
         function renderizar() {
             const lista = document.getElementById('listaTarefas');
-            const filtrosDiv = document.getElementById('filtrosContainer');
+            const filtros = document.getElementById('filtrosContainer');
             lista.innerHTML = "";
             const cats = ["Tudo", "Geral", "Alimentação", "Mercado", "Carro", "Igreja", "Educação", "Férias", "Faxina", "Pet", "Manutenção", "Saúde", "Finanças", "Lazer"];
-            filtrosDiv.innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
-            
+            filtros.innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
                 li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
@@ -317,6 +292,7 @@
     </script>
 </body>
 </html>
+
 
 
 
