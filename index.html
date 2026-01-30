@@ -35,9 +35,13 @@
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
-        .tarefa-main { display: flex; align-items: center; gap: 10px; }
+        
+        .tarefa-main { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .autor-container { display: flex; flex-direction: column; align-items: center; min-width: 55px; text-align: center; }
         .autor-mini { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--primary); }
-        .info-container { display: flex; flex-direction: column; }
+        .autor-nome-label { font-size: 0.6rem; font-weight: bold; color: #64748b; margin-top: 2px; }
+
+        .info-container { display: flex; flex-direction: column; flex: 1; }
         .tag-cat { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--primary); }
         .data-tarefa { font-size: 0.75rem; color: #64748b; font-weight: 500; }
         .acoes { display: flex; gap: 15px; }
@@ -76,6 +80,7 @@
 
             <div class="form-card" id="formCard">
                 <div class="form-group">
+                    <input type="text" id="inputNomeManual" placeholder="Seu nome (ex: Anderson)">
                     <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
                     <div style="display: flex; gap: 8px;">
                         <select id="selectCategoria" style="flex: 1;">
@@ -145,6 +150,8 @@
                 document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                 document.getElementById('userPhoto').src = user.photoURL;
                 document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
+                // Preenche o nome manual com o nome do Google por padrão
+                document.getElementById('inputNomeManual').value = user.displayName.split(' ')[0];
                 escutarTarefas();
             } else {
                 document.getElementById('telaLogin').classList.remove('hidden');
@@ -173,20 +180,28 @@
         }
 
         document.getElementById('btnSalvar').onclick = async () => {
+            const nomeManual = document.getElementById('inputNomeManual');
             const desc = document.getElementById('inputTarefa');
             const cat = document.getElementById('selectCategoria');
             const data = document.getElementById('inputData');
+            
             if (!desc.value) return;
+
+            const dados = {
+                descricao: desc.value, 
+                categoria: cat.value, 
+                dataLimite: data.value,
+                autorNome: nomeManual.value || "Alguém", // Salva o nome manual
+                autorFoto: auth.currentUser.photoURL
+            };
+
             if (idEdicao) {
-                await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc.value, categoria: cat.value, dataLimite: data.value });
+                await updateDoc(doc(db, "tarefas", idEdicao), dados);
                 idEdicao = null;
                 document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
             } else {
                 await addDoc(collection(db, "tarefas"), { 
-                    descricao: desc.value, 
-                    categoria: cat.value, 
-                    dataLimite: data.value, 
-                    autorFoto: auth.currentUser.photoURL, 
+                    ...dados,
                     concluida: false, 
                     criadoEm: new Date() 
                 });
@@ -208,18 +223,18 @@
                     const batch = writeBatch(db);
                     tarefas.forEach(t => {
                         const ref = doc(collection(db, "tarefas"));
-                        // LOGICA CORRIGIDA: Mantém a foto do backup se existir, senão usa a do logado
                         batch.set(ref, { 
                             descricao: t.descricao, 
                             categoria: t.categoria, 
                             dataLimite: t.dataLimite, 
                             autorFoto: t.autorFoto || auth.currentUser.photoURL, 
+                            autorNome: t.autorNome || "Autor",
                             concluida: t.concluida || false, 
                             criadoEm: new Date() 
                         });
                     });
                     await batch.commit();
-                    alert("Restauração concluída com as fotos originais preservadas!");
+                    alert("Restauração concluída!");
                 } catch (err) {
                     alert("Erro ao ler o arquivo de backup.");
                 }
@@ -232,8 +247,9 @@
             await updateDoc(doc(db, "tarefas", id), { concluida: s });
         };
 
-        window.prepararEdicao = (id, desc, cat, data) => {
+        window.prepararEdicao = (id, desc, cat, data, nome) => {
             idEdicao = id;
+            document.getElementById('inputNomeManual').value = nome || "";
             document.getElementById('inputTarefa').value = desc;
             document.getElementById('selectCategoria').value = cat;
             document.getElementById('inputData').value = data;
@@ -257,7 +273,10 @@
                 li.innerHTML = `
                     <div class="tarefa-main">
                         <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
-                        <img src="${t.autorFoto || ''}" class="autor-mini">
+                        <div class="autor-container">
+                            <img src="${t.autorFoto || ''}" class="autor-mini">
+                            <span class="autor-nome-label">${t.autorNome || '...'}</span>
+                        </div>
                         <div class="info-container">
                             <span class="tag-cat">${t.categoria}</span>
                             <span class="texto-tarefa" style="font-weight:600;">${t.descricao}</span>
@@ -265,7 +284,7 @@
                         </div>
                     </div>
                     <div class="acoes">
-                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}')">✏️</button>
+                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}', '${t.autorNome}')">✏️</button>
                         <button style="background:none; border:none; cursor:pointer;" onclick="window.eliminar('${t.id}')">🗑️</button>
                     </div>`;
                 lista.appendChild(li);
@@ -280,7 +299,6 @@
     </script>
 </body>
 </html>
-
 
 
 
