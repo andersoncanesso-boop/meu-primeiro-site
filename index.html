@@ -8,7 +8,7 @@
         :root { --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; --primary: #2563eb; }
         body.dark-mode { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #3b82f6; }
         body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: background 0.3s; }
-        .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; }
+        .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
         /* Dashboard */
@@ -19,26 +19,27 @@
         .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
         .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
 
-        .backup-section { display: flex; gap: 10px; margin-bottom: 20px; padding: 10px; background: #f1f5f9; border-radius: 12px; justify-content: center; }
-        .btn-backup { font-size: 0.75rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; border: 1px solid #cbd5e1; background: white; font-weight: bold; }
-
-        .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
-        .edit-mode { border-color: #f59e0b; background: #fffbeb; }
-        .form-group { display: flex; flex-direction: column; gap: 10px; }
-        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
-        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-
-        .filtros { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+        /* Filtros com Setas */
+        .filtros-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 20px; }
+        .filtros { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 5px 0; }
         .filtros::-webkit-scrollbar { display: none; }
+        .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--text); }
+        
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* Estilo da Lista e Itens */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
         .tag-cat { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--primary); display: block; }
         .acoes { display: flex; gap: 15px; }
+        
+        .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
+        .form-group { display: flex; flex-direction: column; gap: 10px; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
+        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -52,14 +53,10 @@
         <div id="telaApp" class="hidden">
             <div class="user-header">
                 <div class="user-info"><img id="userPhoto" src=""> <span id="userName" style="font-weight: bold; margin-left: 10px;"></span></div>
-                <button id="btnDarkMode" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">🌙</button>
-                <button id="btnLogout" style="color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold;">Sair</button>
-            </div>
-
-            <div class="backup-section">
-                <button class="btn-backup" onclick="window.exportarBackup()">📥 Exportar Backup</button>
-                <button class="btn-backup" onclick="document.getElementById('inputFile').click()">📤 Restaurar</button>
-                <input type="file" id="inputFile" class="hidden" accept=".json" onchange="window.importarBackup(event)">
+                <div>
+                    <button id="btnDarkMode" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">🌙</button>
+                    <button id="btnLogout" style="color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold; margin-left:10px;">Sair</button>
+                </div>
             </div>
 
             <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
@@ -85,11 +82,15 @@
                         <input type="date" id="inputData" style="flex: 1;">
                     </div>
                     <button id="btnSalvar">Adicionar Tarefa</button>
-                    <button id="btnCancelarEdicao" class="hidden" style="background:#94a3b8; color:white; border:none; padding:10px; border-radius:10px; cursor:pointer; margin-top:5px;">Cancelar Edição</button>
                 </div>
             </div>
 
-            <div class="filtros" id="filtrosContainer"></div>
+            <div class="filtros-wrapper">
+                <button class="seta-nav" onclick="scrollFiltros(-100)">❮</button>
+                <div class="filtros" id="filtrosContainer"></div>
+                <button class="seta-nav" onclick="scrollFiltros(100)">❯</button>
+            </div>
+
             <ul id="listaTarefas"></ul>
         </div>
     </div>
@@ -99,7 +100,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -137,6 +138,10 @@
             }
         });
 
+        window.scrollFiltros = (valor) => {
+            document.getElementById('filtrosContainer').scrollBy({ left: valor, behavior: 'smooth' });
+        };
+
         function escutarTarefas() {
             onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snapshot) => {
                 tarefasGlobais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -151,32 +156,12 @@
             if (!desc.value) return;
             if (idEdicao) {
                 await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc.value, categoria: cat.value, dataLimite: data.value });
-                limparForm();
+                idEdicao = null;
+                document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
             } else {
                 await addDoc(collection(db, "tarefas"), { descricao: desc.value, categoria: cat.value, dataLimite: data.value, autorFoto: auth.currentUser.photoURL, concluida: false, criadoEm: new Date() });
-                desc.value = "";
             }
-        };
-
-        window.exportarBackup = () => {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
-            const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "backup_familiar.json"); dl.click();
-        };
-
-        window.importarBackup = (event) => {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const tarefas = JSON.parse(e.target.result);
-                const batch = writeBatch(db);
-                tarefas.forEach(t => {
-                    const ref = doc(collection(db, "tarefas"));
-                    batch.set(ref, { descricao: t.descricao, categoria: t.categoria, dataLimite: t.dataLimite, autorFoto: auth.currentUser.photoURL, concluida: t.concluida || false, criadoEm: new Date() });
-                });
-                await batch.commit();
-                alert("Restaurado!");
-            };
-            reader.readAsText(file);
+            desc.value = "";
         };
 
         window.toggleTarefa = async (id, s) => {
@@ -190,11 +175,8 @@
             document.getElementById('selectCategoria').value = cat;
             document.getElementById('inputData').value = data;
             document.getElementById('btnSalvar').innerText = "Salvar Alteração";
-            document.getElementById('formCard').classList.add('edit-mode');
-            document.getElementById('btnCancelarEdicao').classList.remove('hidden');
         };
 
-        function limparForm() { idEdicao = null; document.getElementById('inputTarefa').value = ""; document.getElementById('btnSalvar').innerText = "Adicionar Tarefa"; document.getElementById('formCard').classList.remove('edit-mode'); document.getElementById('btnCancelarEdicao').classList.add('hidden'); }
         window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
         window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
 
@@ -204,6 +186,7 @@
             lista.innerHTML = "";
             const cats = ["Tudo", "Geral", "Mercado", "Faxina", "Pet", "Educação", "Igreja", "Férias", "Manutenção", "Saúde", "Finanças", "Lazer"];
             filtrosDiv.innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
+            
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
                 li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
