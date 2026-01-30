@@ -1,222 +1,51 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Enterprise</title>
-    <style>
-        :root { --bg: #f0f4f8; --card: #ffffff; --text: #333; --border: #edf2f7; --primary: #1a73e8; }
-        body.dark-mode { --bg: #1a202c; --card: #2d3748; --text: #f7fafc; --border: #4a5568; --primary: #63b3ed; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: 0.3s; }
-        .container { background: var(--card); padding: 2rem; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 480px; }
-        .hidden { display: none; }
-        
-        /* Progress Bar */
-        .progress-container { background: #eee; border-radius: 10px; height: 8px; margin: 15px 0; overflow: hidden; }
-        #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.5s; }
-
-        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .user-info { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        .user-info img { width: 35px; border-radius: 50%; border: 2px solid var(--primary); }
-
-        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-        input, select { padding: 12px; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
-        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: bold; }
-
-        .filtros { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 10px; }
-        .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
-        .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-        /* Estilo das Tarefas */
-        .tarefa-item { background: var(--bg); margin-bottom: 10px; padding: 15px; border-radius: 15px; border-left: 5px solid var(--primary); }
-        .tarefa-top { display: flex; justify-content: space-between; align-items: flex-start; }
-        .tarefa-main { display: flex; align-items: center; gap: 10px; }
-        .actions { display: flex; gap: 10px; margin-top: 10px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 10px; }
-        .btn-action { font-size: 0.75rem; text-decoration: none; color: var(--text); display: flex; align-items: center; gap: 4px; opacity: 0.7; }
-        .btn-action:hover { opacity: 1; }
-        
-        .concluida { opacity: 0.5; border-left-color: #cbd5e0; }
-        .concluida .desc { text-decoration: line-through; }
-        
-        .tag { font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; background: var(--primary); color: white; font-weight: bold; }
-        .data-badge { font-size: 0.7rem; color: #a0aec0; }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <div id="telaLogin">
-            <h1 style="text-align:center;">🏠 Gestão Familiar</h1>
-            <button id="btnLogin" style="width:100%; padding:15px; border-radius:12px; cursor:pointer;">Entrar com Google</button>
-        </div>
-
-        <div id="telaApp" class="hidden">
-            <div class="user-header">
-                <div class="user-info">
-                    <img id="userPhoto" src="">
-                    <span id="userName"></span>
-                </div>
-                <button id="btnDarkMode">🌙</button>
-                <button id="btnLogout" style="color:red; background:none; border:none; cursor:pointer;">Sair</button>
-            </div>
-
-            <div class="progress-container"><div id="progressBar"></div></div>
-
-            <div class="form-group">
-                <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
-                <div style="display: flex; gap: 5px;">
-                    <select id="selectCategoria" style="flex: 1;">
-                        <option value="Geral">📂 Geral</option>
-                        <option value="Mercado">🛒 Mercado</option>
-                        <option value="Faxina">🧹 Faxina</option>
-                        <option value="Pet">🐾 Pet</option>
-                    </select>
-                    <input type="date" id="inputData" style="flex: 1;">
-                </div>
-                <button id="btnSalvar">Adicionar e Notificar</button>
-            </div>
-
-            <div class="filtros" id="filtrosContainer"></div>
-            <div id="listaTarefas"></div>
-        </div>
+<div class="form-group">
+    <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
+    <input type="tel" id="inputWhats" placeholder="WhatsApp (ex: 5511999999999)">
+    <div style="display: flex; gap: 5px;">
+        <select id="selectCategoria" style="flex: 1;">
+            <option value="Geral">📂 Geral</option>
+            <option value="Mercado">🛒 Mercado</option>
+            <option value="Faxina">🧹 Faxina</option>
+            <option value="Pet">🐾 Pet</option>
+        </select>
+        <input type="date" id="inputData" style="flex: 1;">
     </div>
+    <button id="btnSalvar">Salvar e Notificar Agora</button>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <audio id="somCheck" src="https://actions.google.com/sounds/v1/foley/beeps_and_bloops_glitchy_digital_ui.ogg"></audio>
+<script type="module">
+    // ... (mantenha o resto do código anterior)
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
-            authDomain: "gestao-familiar-ac7d6.firebaseapp.com",
-            projectId: "gestao-familiar-ac7d6",
-            storageBucket: "gestao-familiar-ac7d6.firebasestorage.app",
-            messagingSenderId: "1063581141078",
-            appId: "1:1063581141078:web:af2fc67412dbc6fee313f7"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        let categoriaAtiva = "Tudo";
-        let tarefasGlobais = [];
-
-        // Inicia Data
-        const hoje = new Date().toISOString().split('T')[0];
-        document.getElementById('inputData').value = hoje;
-
-        // Dark Mode
-        document.getElementById('btnDarkMode').onclick = () => {
-            document.body.classList.toggle('dark-mode');
-            document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-        };
-
-        // Auth
-        document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
-        document.getElementById('btnLogout').onclick = () => signOut(auth);
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('telaLogin').classList.add('hidden');
-                document.getElementById('telaApp').classList.remove('hidden');
-                document.getElementById('userName').innerText = user.displayName;
-                document.getElementById('userPhoto').src = user.photoURL;
-                escutarTarefas();
-            } else {
-                document.getElementById('telaLogin').classList.remove('hidden');
-                document.getElementById('telaApp').classList.add('hidden');
-            }
-        });
-
-        // Salvar
-        document.getElementById('btnSalvar').onclick = async () => {
-            const desc = document.getElementById('inputTarefa');
-            const cat = document.getElementById('selectCategoria').value;
-            const data = document.getElementById('inputData').value;
-            if (desc.value) {
-                await addDoc(collection(db, "tarefas"), {
-                    descricao: desc.value,
-                    categoria: cat,
-                    dataLimite: data,
-                    autorNome: auth.currentUser.displayName,
-                    autorFoto: auth.currentUser.photoURL,
-                    autorEmail: auth.currentUser.email,
-                    concluida: false,
-                    criadoEm: new Date()
-                });
-                desc.value = "";
-            }
-        };
-
-        function escutarTarefas() {
-            onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snapshot) => {
-                tarefasGlobais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderizar();
-            });
-        }
-
-        window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
-
-        function renderizar() {
-            const lista = document.getElementById('listaTarefas');
-            const filtrosDiv = document.getElementById('filtrosContainer');
-            lista.innerHTML = "";
-
-            // Filtros
-            const cats = ["Tudo", "Geral", "Mercado", "Faxina", "Pet"];
-            filtrosDiv.innerHTML = cats.map(c => `
-                <button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>
-            `).join('');
-
-            // Lista
-            tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
-                const dataFmt = t.dataLimite.split('-').reverse().join('/');
-                const li = document.createElement('div');
-                li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
-                
-                // Links de Notificação
-                const msgZap = encodeURIComponent(`Olá! Tenho uma tarefa para você: ${t.descricao} (Categoria: ${t.categoria}) para o dia ${dataFmt}`);
-                const linkZap = `https://wa.me/?text=${msgZap}`;
-                const linkEmail = `mailto:?subject=Nova Tarefa: ${t.categoria}&body=${msgZap}`;
-
-                li.innerHTML = `
-                    <div class="tarefa-top">
-                        <div class="tarefa-main">
-                            <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
-                            <img src="${t.autorFoto}" class="foto-autor" title="${t.autorNome}">
-                            <div>
-                                <span class="tag">${t.categoria}</span>
-                                <div class="desc" style="font-weight:bold;">${t.descricao}</div>
-                                <span class="data-badge">📅 ${dataFmt} • <small>${t.autorNome.split(' ')[0]}</small></span>
-                            </div>
-                        </div>
-                        <button onclick="window.eliminar('${t.id}')" style="border:none; background:none; cursor:pointer;">🗑️</button>
-                    </div>
-                    <div class="actions">
-                        <a href="${linkZap}" target="_blank" class="btn-action">🟢 WhatsApp</a>
-                        <a href="${linkEmail}" class="btn-action">📧 E-mail</a>
-                    </div>
-                `;
-                lista.appendChild(li);
+    document.getElementById('btnSalvar').onclick = async () => {
+        const desc = document.getElementById('inputTarefa');
+        const whats = document.getElementById('inputWhats').value;
+        const cat = document.getElementById('selectCategoria').value;
+        const data = document.getElementById('inputData').value;
+        
+        if (desc.value) {
+            // 1. SALVA NO BANCO
+            await addDoc(collection(db, "tarefas"), {
+                descricao: desc.value,
+                categoria: cat,
+                dataLimite: data,
+                whatsappDestino: whats,
+                autorNome: auth.currentUser.displayName,
+                autorFoto: auth.currentUser.photoURL,
+                concluida: false,
+                criadoEm: new Date()
             });
 
-            const perc = (tarefasGlobais.filter(t => t.concluida).length / tarefasGlobais.length) * 100 || 0;
-            document.getElementById('progressBar').style.width = perc + "%";
-        }
-
-        window.toggleTarefa = async (id, s) => {
-            if (s) { 
-                document.getElementById('somCheck').play().catch(() => {});
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            // 2. DISPARA O WHATSAPP AUTOMATICAMENTE (Se houver número)
+            if(whats) {
+                const dataFmt = data.split('-').reverse().join('/');
+                const msg = encodeURIComponent(`📌 *Nova Tarefa Familiar*\n\nTarefa: ${desc.value}\nCategoria: ${cat}\nData: ${dataFmt}\n\nCriado por: ${auth.currentUser.displayName}`);
+                window.open(`https://wa.me/${whats}?text=${msg}`, '_blank');
             }
-            await updateDoc(doc(db, "tarefas", id), { concluida: s });
-        };
-        window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
-    </script>
-</body>
-</html>
+
+            desc.value = "";
+            alert("Tarefa salva e notificação enviada!");
+        }
+    };
+    // ...
+</script>
+
