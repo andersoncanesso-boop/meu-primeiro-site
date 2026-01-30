@@ -52,8 +52,8 @@
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
         #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
         
-        /* ALERTA DE ERRO VISÍVEL */
-        #statusLogin { text-align: center; color: white; background: #ef4444; font-size: 0.85rem; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-weight: bold; display: none; }
+        /* ALERTA DE ERRO REFORÇADO */
+        #statusLogin { text-align: center; color: white; background: #ef4444; font-size: 0.85rem; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; display: none; border: 2px solid #b91c1c; }
     </style>
 </head>
 <body>
@@ -125,7 +125,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
@@ -152,19 +152,25 @@
         let tarefasGlobais = [];
         let idEdicao = null;
 
-        // VERIFICA SE HÁ ERRO NA URL AO CARREGAR
-        window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('erro')) {
+        // FUNÇÃO PARA MOSTRAR ERRO QUE PERSISTE NO RECARREGAMENTO
+        function verificarErroAcesso() {
+            if (localStorage.getItem('erroAcesso') === 'true') {
                 const alerta = document.getElementById('statusLogin');
                 alerta.style.display = 'block';
-                alerta.innerText = "🚫 Acesso Negado: E-mail não autorizado na Família Canesso.";
-                // Limpa a URL após 3 segundos
-                setTimeout(() => window.history.replaceState({}, document.title, window.location.pathname), 3000);
+                alerta.innerText = "🚫 ACESSO NEGADO: Seu e-mail não faz parte da Família Canesso.";
+                localStorage.removeItem('erroAcesso'); // Limpa o "post-it"
+                setTimeout(() => { alerta.style.display = 'none'; }, 6000);
             }
-        };
+        }
 
-        document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
+        // EXECUTA A VERIFICAÇÃO AO ABRIR O SITE
+        verificarErroAcesso();
+
+        document.getElementById('btnLogin').onclick = () => {
+            localStorage.removeItem('erroAcesso');
+            signInWithRedirect(auth, provider);
+        };
+        
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
         onAuthStateChanged(auth, async (user) => {
@@ -179,11 +185,10 @@
                     document.getElementById('inputNomeManual').value = user.displayName ? user.displayName.split(' ')[0] : 'Anderson';
                     escutarTarefas();
                 } else {
-                    // SE NÃO TIVER ACESSO, DESLOGA E MANDA O ERRO PELA URL
+                    // SE O EMAIL FOR INVÁLIDO:
+                    localStorage.setItem('erroAcesso', 'true'); // Marca o erro no "post-it"
                     await signOut(auth);
-                    if (!window.location.search.includes('erro')) {
-                        window.location.href = window.location.pathname + "?erro=bloqueado";
-                    }
+                    window.location.reload(); // Força o recarregamento para exibir a mensagem
                 }
             } else {
                 document.getElementById('telaLogin').classList.remove('hidden');
@@ -191,7 +196,7 @@
             }
         });
 
-        // Restante das funções de renderizar, salvar e backup...
+        // --- RESTANTE DO CÓDIGO (BACKUP, RENDER, SALVAR) MANTIDO ---
         window.scrollFiltros = (valor) => document.getElementById('filtrosContainer').scrollBy({ left: valor, behavior: 'smooth' });
         function formatarDataAmigavel(d) {
             if (!d) return "";
@@ -292,6 +297,7 @@
     </script>
 </body>
 </html>
+
 
 
 
