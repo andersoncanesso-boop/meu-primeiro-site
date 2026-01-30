@@ -3,50 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar Pro - Enterprise</title>
+    <title>Gestão Familiar Pro</title>
     <style>
         :root { --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; --primary: #2563eb; }
         body.dark-mode { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #3b82f6; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: background 0.3s; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: 0.3s; }
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
+        /* Dashboard */
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
-        #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s; }
 
         .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
         .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
 
+        /* Backup Area */
         .backup-section { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         .btn-backup { font-size: 0.7rem; padding: 6px 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: bold; }
 
+        /* Filtros */
         .filtros-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 20px; gap: 5px; }
         .filtros { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 5px 0; flex: 1; }
         .filtros::-webkit-scrollbar { display: none; }
-        .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; min-width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; color: var(--text); font-weight: bold; }
+        .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; min-width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); font-weight: bold; }
         
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* Lista */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
         
-        .autor-box { display: flex; flex-direction: column; align-items: center; min-width: 50px; text-align: center; margin-right: 10px; }
-        .autor-mini { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--primary); margin-bottom: 3px; }
-        .autor-nome { font-size: 0.55rem; font-weight: bold; color: #64748b; white-space: nowrap; max-width: 50px; overflow: hidden; text-overflow: ellipsis; }
+        /* Avatar do Autor */
+        .autor-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; text-align: center; margin-right: 12px; }
+        .autor-mini { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--primary); margin-bottom: 2px; }
+        .autor-nome { font-size: 0.6rem; font-weight: bold; color: #64748b; white-space: nowrap; max-width: 60px; overflow: hidden; text-overflow: ellipsis; }
         
         .info-container { display: flex; flex-direction: column; flex: 1; }
         .tag-cat { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--primary); }
         .data-tarefa { font-size: 0.75rem; color: #64748b; font-weight: 500; }
-        .acoes { display: flex; gap: 15px; }
         
         .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
-        .form-group { display: flex; flex-direction: column; gap: 10px; }
-        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
-        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; margin-bottom: 10px; }
+        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
     </style>
 </head>
 <body>
@@ -76,28 +79,26 @@
             <div class="progress-container"><div id="progressBar"></div></div>
 
             <div class="form-card" id="formCard">
-                <div class="form-group">
-                    <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
-                    <div style="display: flex; gap: 8px;">
-                        <select id="selectCategoria" style="flex: 1;">
-                            <option value="Geral">📂 Geral</option>
-                            <option value="Alimentação">🧑‍🍳 Alimentação</option>
-                            <option value="Mercado">🛒 Mercado</option>
-                            <option value="Carro">🚗 Carro</option>
-                            <option value="Igreja">⛪ Igreja</option>
-                            <option value="Educação">📚 Educação</option>
-                            <option value="Férias">🌴 Férias</option>
-                            <option value="Faxina">🧹 Faxina</option>
-                            <option value="Pet">🐾 Pet</option>
-                            <option value="Manutenção">🛠️ Manutenção</option>
-                            <option value="Saúde">💊 Saúde</option>
-                            <option value="Finanças">💰 Finanças</option>
-                            <option value="Lazer">🍕 Lazer</option>
-                        </select>
-                        <input type="date" id="inputData" style="flex: 1;">
-                    </div>
-                    <button id="btnSalvar">Adicionar Tarefa</button>
+                <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?" style="width: 100%; box-sizing: border-box;">
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <select id="selectCategoria" style="flex: 1;">
+                        <option value="Geral">📂 Geral</option>
+                        <option value="Alimentação">🧑‍🍳 Alimentação</option>
+                        <option value="Mercado">🛒 Mercado</option>
+                        <option value="Carro">🚗 Carro</option>
+                        <option value="Igreja">⛪ Igreja</option>
+                        <option value="Educação">📚 Educação</option>
+                        <option value="Férias">🌴 Férias</option>
+                        <option value="Faxina">🧹 Faxina</option>
+                        <option value="Pet">🐾 Pet</option>
+                        <option value="Manutenção">🛠️ Manutenção</option>
+                        <option value="Saúde">💊 Saúde</option>
+                        <option value="Finanças">💰 Finanças</option>
+                        <option value="Lazer">🍕 Lazer</option>
+                    </select>
+                    <input type="date" id="inputData" style="flex: 1;">
                 </div>
+                <button id="btnSalvar">Adicionar Tarefa</button>
             </div>
 
             <div class="filtros-wrapper">
@@ -161,9 +162,7 @@
             if (!dataStr) return "";
             const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
             const dataObj = new Date(dataStr + "T12:00:00");
-            const dia = String(dataObj.getDate()).padStart(2, '0');
-            const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
-            return `${dia}/${mes} (${diasSemana[dataObj.getDay()]})`;
+            return `${String(dataObj.getDate()).padStart(2, '0')}/${String(dataObj.getMonth()+1).padStart(2, '0')} (${diasSemana[dataObj.getDay()]})`;
         }
 
         function escutarTarefas() {
@@ -178,24 +177,22 @@
             const cat = document.getElementById('selectCategoria');
             const data = document.getElementById('inputData');
             if (!desc.value) return;
-            
-            const dadosTarefa = {
-                descricao: desc.value, 
-                categoria: cat.value, 
-                dataLimite: data.value, 
-                autorFoto: auth.currentUser.photoURL, 
-                autorNome: auth.currentUser.displayName.split(' ')[0]
-            };
+
+            // CAPTURA O NOME ATUAL DO USUÁRIO GOOGLE LOGADO
+            const nomeGoogle = auth.currentUser.displayName.split(' ')[0];
+            const fotoGoogle = auth.currentUser.photoURL;
 
             if (idEdicao) {
-                await updateDoc(doc(db, "tarefas", idEdicao), dadosTarefa);
+                await updateDoc(doc(db, "tarefas", idEdicao), {
+                    descricao: desc.value, categoria: cat.value, dataLimite: data.value,
+                    autorNome: nomeGoogle, autorFoto: fotoGoogle // Atualiza para quem editou por último
+                });
                 idEdicao = null;
                 document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
             } else {
                 await addDoc(collection(db, "tarefas"), { 
-                    ...dadosTarefa,
-                    concluida: false, 
-                    criadoEm: new Date() 
+                    descricao: desc.value, categoria: cat.value, dataLimite: data.value, 
+                    autorFoto: fotoGoogle, autorNome: nomeGoogle, concluida: false, criadoEm: new Date() 
                 });
             }
             desc.value = "";
@@ -210,24 +207,18 @@
             const file = event.target.files[0];
             const reader = new FileReader();
             reader.onload = async (e) => {
-                try {
-                    const tarefas = JSON.parse(e.target.result);
-                    const batch = writeBatch(db);
-                    tarefas.forEach(t => {
-                        const ref = doc(collection(db, "tarefas"));
-                        batch.set(ref, { 
-                            descricao: t.descricao, 
-                            categoria: t.categoria, 
-                            dataLimite: t.dataLimite, 
-                            autorFoto: t.autorFoto || auth.currentUser.photoURL, 
-                            autorNome: t.autorNome || "...", 
-                            concluida: t.concluida || false, 
-                            criadoEm: new Date() 
-                        });
+                const tarefas = JSON.parse(e.target.result);
+                const batch = writeBatch(db);
+                tarefas.forEach(t => {
+                    const ref = doc(collection(db, "tarefas"));
+                    batch.set(ref, { 
+                        descricao: t.descricao, categoria: t.categoria, dataLimite: t.dataLimite, 
+                        autorFoto: t.autorFoto || auth.currentUser.photoURL, 
+                        autorNome: t.autorNome || "...", concluida: t.concluida || false, criadoEm: new Date() 
                     });
-                    await batch.commit();
-                    alert("Restauração concluída!");
-                } catch (err) { alert("Erro no backup."); }
+                });
+                await batch.commit();
+                alert("Importado com sucesso!");
             };
             reader.readAsText(file);
         };
@@ -258,7 +249,7 @@
             
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
-                li.className = `tarefa-item ${t.concluida ? 'status-concluido' : ''}`;
+                li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
                 li.innerHTML = `
                     <div style="display:flex; align-items:center; flex:1;">
                         <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
