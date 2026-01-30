@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Teste Firebase</title>
+    <title>Gestão Familiar - Minhas Tarefas</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #e8f0fe; }
-        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
-        button { background-color: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f4f7f6; }
+        .card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
+        h1 { color: #333; margin-bottom: 1.5rem; font-size: 1.5rem; }
+        input { width: 100%; padding: 12px; margin-bottom: 1rem; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; outline: none; transition: border-color 0.3s; }
+        input:focus { border-color: #1a73e8; }
+        button { width: 100%; background-color: #1a73e8; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: background 0.3s; }
         button:hover { background-color: #1557b0; }
-        #status { margin-top: 15px; color: green; font-weight: bold; }
+        #status { margin-top: 1rem; font-size: 0.9rem; font-weight: 500; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h1>🏠 Gestão Familiar</h1>
-        <p>Clique no botão para testar a conexão com o Firebase:</p>
-        <button id="btnSalvar">Salvar Tarefa de Teste</button>
+        <h1>🏠 Minhas Tarefas</h1>
+        <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
+        <button id="btnSalvar">Adicionar Tarefa</button>
         <div id="status"></div>
     </div>
 
@@ -25,7 +28,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Suas chaves que você acabou de me passar
+        // Suas chaves de conexão
         const firebaseConfig = {
             apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
             authDomain: "gestao-familiar-ac7d6.firebaseapp.com",
@@ -35,25 +38,37 @@
             appId: "1:1063581141078:web:af2fc67412dbc6fee313f7"
         };
 
-        // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Função para salvar no banco de dados
-        document.getElementById('btnSalvar').onclick = async () => {
-            const statusDiv = document.getElementById('status');
+        const btn = document.getElementById('btnSalvar');
+        const input = document.getElementById('inputTarefa');
+        const statusDiv = document.getElementById('status');
+
+        btn.onclick = async () => {
+            const tarefaTexto = input.value;
+
+            if (!tarefaTexto) {
+                statusDiv.innerText = "⚠️ Por favor, digite algo!";
+                statusDiv.style.color = "orange";
+                return;
+            }
+
             statusDiv.innerText = "Enviando...";
+            statusDiv.style.color = "#666";
             
             try {
-                await addDoc(collection(db, "testes"), {
-                    item: "Lavar louça",
-                    data: new Date(),
-                    status: "Pendente"
+                await addDoc(collection(db, "tarefas"), {
+                    descricao: tarefaTexto,
+                    dataCriacao: new Date(),
+                    concluida: false
                 });
-                statusDiv.innerText = "✅ Enviado com sucesso!";
+                statusDiv.innerText = "✅ Tarefa salva com sucesso!";
+                statusDiv.style.color = "green";
+                input.value = ""; // Limpa o campo após salvar
             } catch (e) {
-                console.error("Erro ao salvar: ", e);
-                statusDiv.innerText = "❌ Erro: Verifique se o Firestore está em 'Modo de Teste'";
+                console.error(e);
+                statusDiv.innerText = "❌ Erro ao salvar.";
                 statusDiv.style.color = "red";
             }
         };
