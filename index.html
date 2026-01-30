@@ -11,6 +11,7 @@
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
+        /* Dashboard */
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s; }
@@ -18,9 +19,7 @@
         .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
         .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
 
-        .backup-section { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        .btn-backup { font-size: 0.7rem; padding: 6px 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: bold; }
-
+        /* Filtros */
         .filtros-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 20px; gap: 5px; }
         .filtros { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 5px 0; flex: 1; }
         .filtros::-webkit-scrollbar { display: none; }
@@ -29,6 +28,7 @@
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
+        /* Lista de Tarefas */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
@@ -43,7 +43,7 @@
         .data-tarefa { font-size: 0.75rem; color: #64748b; font-weight: 500; }
         
         .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
-        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; margin-bottom: 10px; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
         #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
     </style>
 </head>
@@ -64,17 +64,11 @@
                 </div>
             </div>
 
-            <div class="backup-section">
-                <button class="btn-backup" onclick="window.exportarBackup()">📥 Backup</button>
-                <button class="btn-backup" onclick="document.getElementById('inputFile').click()">📤 Restaurar</button>
-                <input type="file" id="inputFile" class="hidden" accept=".json" onchange="window.importarBackup(event)">
-            </div>
-
             <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
             <div class="progress-container"><div id="progressBar"></div></div>
 
             <div class="form-card" id="formCard">
-                <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?" style="width: 100%; box-sizing: border-box;">
+                <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                     <select id="selectCategoria" style="flex: 1;">
                         <option value="Geral">📂 Geral</option>
@@ -91,7 +85,7 @@
                         <option value="Finanças">💰 Finanças</option>
                         <option value="Lazer">🍕 Lazer</option>
                     </select>
-                    <input type="date" id="inputData" style="flex: 1;">
+                    <input type="date" id="inputData">
                 </div>
                 <button id="btnSalvar">Adicionar Tarefa</button>
             </div>
@@ -111,7 +105,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -173,59 +167,35 @@
             const data = document.getElementById('inputData');
             if (!desc.value) return;
 
-            // CAPTURA BLINDADA DO NOME DO GOOGLE
-            const user = auth.currentUser;
-            let nomeParaSalvar = "Alguém";
+            // NOVA LÓGICA DE CAPTURA SEGURA
+            const currentUser = auth.currentUser;
+            let nomeFinal = "Eu";
             
-            if (user) {
-                if (user.displayName) {
-                    nomeParaSalvar = user.displayName.split(' ')[0];
-                } else if (user.email) {
-                    nomeParaSalvar = user.email.split('@')[0];
-                }
+            if (currentUser) {
+                // Tenta pegar o nome direto do objeto de autenticação
+                nomeFinal = currentUser.displayName ? currentUser.displayName.split(' ')[0] : (currentUser.email ? currentUser.email.split('@')[0] : "Eu");
             }
 
-            const fotoParaSalvar = user ? user.photoURL : '';
+            const dadosUpdate = {
+                descricao: desc.value,
+                categoria: cat.value,
+                dataLimite: data.value,
+                autorNome: nomeFinal,
+                autorFoto: currentUser ? currentUser.photoURL : ""
+            };
 
             if (idEdicao) {
-                await updateDoc(doc(db, "tarefas", idEdicao), {
-                    descricao: desc.value, categoria: cat.value, dataLimite: data.value,
-                    autorNome: nomeParaSalvar, autorFoto: fotoParaSalvar
-                });
+                await updateDoc(doc(db, "tarefas", idEdicao), dadosUpdate);
                 idEdicao = null;
                 document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
             } else {
                 await addDoc(collection(db, "tarefas"), { 
-                    descricao: desc.value, categoria: cat.value, dataLimite: data.value, 
-                    autorFoto: fotoParaSalvar, autorNome: nomeParaSalvar, concluida: false, criadoEm: new Date() 
+                    ...dadosUpdate,
+                    concluida: false, 
+                    criadoEm: new Date() 
                 });
             }
             desc.value = "";
-        };
-
-        window.exportarBackup = () => {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
-            const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "backup_familiar.json"); dl.click();
-        };
-
-        window.importarBackup = (event) => {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const tarefas = JSON.parse(e.target.result);
-                const batch = writeBatch(db);
-                tarefas.forEach(t => {
-                    const ref = doc(collection(db, "tarefas"));
-                    batch.set(ref, { 
-                        descricao: t.descricao, categoria: t.categoria, dataLimite: t.dataLimite, 
-                        autorFoto: t.autorFoto || '', 
-                        autorNome: t.autorNome || "Autor", concluida: t.concluida || false, criadoEm: new Date() 
-                    });
-                });
-                await batch.commit();
-                alert("Importado!");
-            };
-            reader.readAsText(file);
         };
 
         window.toggleTarefa = async (id, s) => {
@@ -284,6 +254,7 @@
     </script>
 </body>
 </html>
+
 
 
 
