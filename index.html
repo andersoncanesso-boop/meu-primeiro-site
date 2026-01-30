@@ -76,6 +76,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <audio id="somCheck" src="https://actions.google.com/sounds/v1/foley/beeps_and_bloops_glitchy_digital_ui.ogg" preload="auto"></audio>
 
     <script type="module">
@@ -106,98 +107,5 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('telaLogin').classList.add('hidden');
-                document.getElementById('telaApp').classList.remove('hidden');
-                document.getElementById('userName').innerText = user.displayName.split(' ')[0];
-                document.getElementById('userPhoto').src = user.photoURL;
-                carregarTarefas();
-            } else {
-                document.getElementById('telaLogin').classList.remove('hidden');
-                document.getElementById('telaApp').classList.add('hidden');
-            }
-        });
 
-        // --- SALVAR TAREFA ---
-        document.getElementById('btnSalvar').onclick = async () => {
-            const input = document.getElementById('inputTarefa');
-            const cat = document.getElementById('selectCategoria').value;
-            if (input.value) {
-                await addDoc(collection(db, "tarefas"), {
-                    descricao: input.value,
-                    categoria: cat,
-                    autorFoto: auth.currentUser.photoURL,
-                    concluida: false,
-                    dataCriacao: new Date()
-                });
-                input.value = "";
-            }
-        };
-
-        // --- FILTROS ---
-        window.filtrar = (cat, btn) => {
-            categoriaAtual = cat;
-            document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            carregarTarefas();
-        };
-
-        // --- CARREGAR LISTA ---
-        function carregarTarefas() {
-            const q = query(collection(db, "tarefas"), orderBy("dataCriacao", "desc"));
-            onSnapshot(q, (snapshot) => {
-                const lista = document.getElementById('listaTarefas');
-                lista.innerHTML = "";
-                snapshot.forEach(docSnap => {
-                    const t = docSnap.data();
-                    if (categoriaAtual !== "Tudo" && t.categoria !== categoriaAtual) return;
-
-                    const li = document.createElement('li');
-                    li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
-                    li.innerHTML = `
-                        <div class="tarefa-main">
-                            <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${docSnap.id}', this.checked)">
-                            <img src="${t.autorFoto}" class="foto-autor">
-                            <div>
-                                <span class="tag">${t.categoria}</span><br>
-                                <span>${t.descricao}</span>
-                            </div>
-                        </div>
-                        <button onclick="window.excluirTarefa('${docSnap.id}')" style="background:none; border:none; color:#ddd; cursor:pointer;">🗑️</button>
-                    `;
-                    lista.appendChild(li);
-                });
-            });
-        }
-
-        // --- FUNÇÃO PARA DESBLOQUEAR ÁUDIO ---
-        const desbloquearAudio = () => {
-            const som = document.getElementById('somCheck');
-            som.play().then(() => {
-                som.pause();
-                som.currentTime = 0;
-            }).catch(() => {});
-            document.removeEventListener('click', desbloquearAudio);
-        };
-        document.addEventListener('click', desbloquearAudio);
-
-        // --- ATUALIZAR STATUS (SOM AQUI) ---
-        window.toggleTarefa = async (id, status) => {
-            if (status) {
-                const som = document.getElementById('somCheck');
-                try {
-                    som.currentTime = 0;
-                    await som.play();
-                } catch (e) {
-                    console.log("Áudio ainda bloqueado", e);
-                }
-            }
-            await updateDoc(doc(db, "tarefas", id), { concluida: status });
-        };
-
-        // --- EXCLUIR ---
-        window.excluirTarefa = async (id) => {
-            if(confirm("Excluir tarefa?")) await deleteDoc(doc(db, "tarefas", id));
-        };
-    </script>
-</body>
-</html>
 
