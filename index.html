@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Painel</title>
+    <title>Gestão Familiar - V2</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; margin: 0; }
         .container { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        h1 { color: #1a73e8; text-align: center; font-size: 1.8rem; }
-        .form-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 10px; outline: none; font-size: 1rem; }
+        h1 { color: #1a73e8; text-align: center; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        input { padding: 12px; border: 2px solid #ddd; border-radius: 10px; outline: none; font-size: 1rem; }
         input:focus { border-color: #1a73e8; }
-        button#btnSalvar { background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        button#btnSalvar { background: #1a73e8; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; }
         
-        /* Estilo da Lista */
-        #listaTarefas { list-style: none; padding: 0; margin-top: 20px; border-top: 1px solid #eee; }
-        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; background: #fff; transition: 0.2s; }
-        .tarefa-item:hover { background: #f9f9f9; }
-        .btn-delete { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; }
+        #listaTarefas { list-style: none; padding: 0; margin-top: 20px; }
+        .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .tarefa-info { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .concluida { text-decoration: line-through; color: #888; }
+        .autor { font-size: 0.7rem; color: #1a73e8; display: block; }
+        .btn-delete { background: #ff4d4d11; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -26,17 +27,17 @@
         <h1>🏠 Gestão Familiar</h1>
         
         <div class="form-group">
-            <input type="text" id="inputTarefa" placeholder="Nova tarefa...">
-            <button id="btnSalvar">Add</button>
+            <input type="text" id="inputNome" placeholder="Seu nome (ex: Anderson)">
+            <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
+            <button id="btnSalvar">Adicionar à Lista</button>
         </div>
 
-        <ul id="listaTarefas">
-            </ul>
+        <ul id="listaTarefas"></ul>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
@@ -51,43 +52,64 @@
         const db = getFirestore(app);
         const tarefasRef = collection(db, "tarefas");
 
-        // 1. SALVAR TAREFA
+        // 1. SALVAR COM NOME
         document.getElementById('btnSalvar').onclick = async () => {
-            const input = document.getElementById('inputTarefa');
-            if (input.value) {
+            const inputT = document.getElementById('inputTarefa');
+            const inputN = document.getElementById('inputNome');
+            if (inputT.value && inputN.value) {
                 await addDoc(tarefasRef, {
-                    descricao: input.value,
+                    descricao: inputT.value,
+                    autor: inputN.value,
+                    concluida: false,
                     dataCriacao: new Date()
                 });
-                input.value = "";
-            }
+                inputT.value = "";
+            } else { alert("Preencha seu nome e a tarefa!"); }
         };
 
-        // 2. LER TAREFAS EM TEMPO REAL
+        // 2. LER E ATUALIZAR INTERFACE
         const q = query(tarefasRef, orderBy("dataCriacao", "desc"));
         onSnapshot(q, (snapshot) => {
             const listaUl = document.getElementById('listaTarefas');
-            listaUl.innerHTML = ""; // Limpa a lista antes de reconstruir
+            listaUl.innerHTML = "";
             
             snapshot.forEach((docSnap) => {
-                const tarefa = docSnap.data();
+                const t = docSnap.data();
+                const id = docSnap.id;
                 const li = document.createElement('li');
                 li.className = 'tarefa-item';
+                
                 li.innerHTML = `
-                    <span>${tarefa.descricao}</span>
-                    <button class="btn-delete" data-id="${docSnap.id}">Excluir</button>
+                    <div class="tarefa-info">
+                        <input type="checkbox" ${t.concluida ? 'checked' : ''} class="check-concluir" data-id="${id}">
+                        <span class="${t.concluida ? 'concluida' : ''}">
+                            ${t.descricao}
+                            <span class="autor">por: ${t.autor}</span>
+                        </span>
+                    </div>
+                    <button class="btn-delete" data-id="${id}">Excluir</button>
                 `;
                 listaUl.appendChild(li);
             });
 
-            // 3. DELETAR TAREFA
+            // 3. EVENTO DE CONCLUIR (UPDATE)
+            document.querySelectorAll('.check-concluir').forEach(check => {
+                check.onchange = async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    await updateDoc(doc(db, "tarefas", id), {
+                        concluida: e.target.checked
+                    });
+                };
+            });
+
+            // 4. EVENTO DE EXCLUIR (DELETE)
             document.querySelectorAll('.btn-delete').forEach(btn => {
                 btn.onclick = async (e) => {
-                    const id = e.target.getAttribute('data-id');
-                    await deleteDoc(doc(db, "tarefas", id));
+                    await deleteDoc(doc(db, "tarefas", e.target.getAttribute('data-id')));
                 };
             });
         });
     </script>
 </body>
 </html>
+
