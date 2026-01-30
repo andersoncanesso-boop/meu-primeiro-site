@@ -7,43 +7,40 @@
     <style>
         :root { --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --border: #e2e8f0; --primary: #2563eb; }
         body.dark-mode { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #3b82f6; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: 0.3s; }
-        .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: 0.3s; }
+        .container { background: var(--card); padding: 20px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
         
-        /* Dashboard */
-        .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
-        .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
+        .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin: 15px 0; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s; }
 
-        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
         .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
 
         /* Filtros */
-        .filtros-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 20px; gap: 5px; }
-        .filtros { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 5px 0; flex: 1; }
+        .filtros-wrapper { display: flex; align-items: center; gap: 5px; margin-bottom: 20px; }
+        .filtros { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; flex: 1; padding: 5px 0; }
         .filtros::-webkit-scrollbar { display: none; }
-        .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; min-width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); font-weight: bold; }
+        .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; min-width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Lista de Tarefas */
+        /* Lista */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
         
-        .autor-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; text-align: center; margin-right: 12px; }
-        .autor-mini { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--primary); margin-bottom: 2px; }
-        .autor-nome { font-size: 0.6rem; font-weight: bold; color: #64748b; white-space: nowrap; max-width: 60px; overflow: hidden; text-overflow: ellipsis; }
+        .autor-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; margin-right: 10px; }
+        .autor-mini { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--primary); }
+        .autor-nome { font-size: 0.6rem; font-weight: bold; color: #64748b; }
         
         .info-container { display: flex; flex-direction: column; flex: 1; }
-        .tag-cat { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--primary); }
-        .data-tarefa { font-size: 0.75rem; color: #64748b; font-weight: 500; }
+        .tag-cat { font-size: 0.6rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
         
-        .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
-        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 20px; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); margin-bottom: 10px; width: 100%; box-sizing: border-box; }
         #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
     </style>
 </head>
@@ -51,23 +48,22 @@
 
     <div class="container">
         <div id="telaLogin">
-            <h1 style="text-align:center; color: #2563eb;">🏠 Gestão Familiar</h1>
-            <button id="btnLogin" style="width:100%; padding:16px; border-radius:12px; background:white; border:1px solid #ddd; font-weight:bold; cursor:pointer;">Entrar com Google</button>
+            <h1 style="text-align:center;">🏠 Gestão Familiar</h1>
+            <button id="btnLogin" style="width:100%; padding:15px; border-radius:12px; cursor:pointer;">Entrar com Google</button>
         </div>
 
         <div id="telaApp" class="hidden">
             <div class="user-header">
-                <div class="user-info"><img id="userPhoto" src=""> <span id="userName" style="font-weight: bold; margin-left: 10px;"></span></div>
+                <div class="user-info"><img id="userPhoto" src=""> <span id="userNameHeader" style="font-weight:bold; margin-left:10px;"></span></div>
                 <div>
-                    <button id="btnDarkMode" style="background:none; border:none; font-size:1.4rem; cursor:pointer;">🌙</button>
-                    <button id="btnLogout" style="color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold; margin-left:10px;">Sair</button>
+                    <button id="btnDarkMode" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">🌙</button>
+                    <button id="btnLogout" style="color:red; background:none; border:none; cursor:pointer; margin-left:10px;">Sair</button>
                 </div>
             </div>
 
-            <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
             <div class="progress-container"><div id="progressBar"></div></div>
 
-            <div class="form-card" id="formCard">
+            <div class="form-card">
                 <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                     <select id="selectCategoria" style="flex: 1;">
@@ -91,9 +87,9 @@
             </div>
 
             <div class="filtros-wrapper">
-                <button class="seta-nav" onclick="scrollFiltros(-100)">❮</button>
+                <button class="seta-nav" onclick="document.getElementById('filtrosContainer').scrollBy(-100,0)">❮</button>
                 <div class="filtros" id="filtrosContainer"></div>
-                <button class="seta-nav" onclick="scrollFiltros(100)">❯</button>
+                <button class="seta-nav" onclick="document.getElementById('filtrosContainer').scrollBy(100,0)">❯</button>
             </div>
 
             <ul id="listaTarefas"></ul>
@@ -101,7 +97,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <audio id="somCheck" src="https://actions.google.com/sounds/v1/foley/beeps_and_bloops_glitchy_digital_ui.ogg"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -133,7 +128,7 @@
             if (user) {
                 document.getElementById('telaLogin').classList.add('hidden');
                 document.getElementById('telaApp').classList.remove('hidden');
-                document.getElementById('userName').innerText = user.displayName ? user.displayName.split(' ')[0] : 'Eu';
+                document.getElementById('userNameHeader').innerText = user.displayName ? user.displayName.split(' ')[0] : 'Eu';
                 document.getElementById('userPhoto').src = user.photoURL;
                 document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
                 escutarTarefas();
@@ -143,15 +138,11 @@
             }
         });
 
-        window.scrollFiltros = (valor) => {
-            document.getElementById('filtrosContainer').scrollBy({ left: valor, behavior: 'smooth' });
-        };
-
-        function formatarDataAmigavel(dataStr) {
-            if (!dataStr) return "";
-            const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-            const dataObj = new Date(dataStr + "T12:00:00");
-            return `${String(dataObj.getDate()).padStart(2, '0')}/${String(dataObj.getMonth()+1).padStart(2, '0')} (${diasSemana[dataObj.getDay()]})`;
+        function formatarData(d) {
+            if (!d) return "";
+            const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+            const data = new Date(d + "T12:00:00");
+            return `${String(data.getDate()).padStart(2,'0')}/${String(data.getMonth()+1).padStart(2,'0')} (${dias[data.getDay()]})`;
         }
 
         function escutarTarefas() {
@@ -163,62 +154,33 @@
 
         document.getElementById('btnSalvar').onclick = async () => {
             const desc = document.getElementById('inputTarefa');
-            const cat = document.getElementById('selectCategoria');
-            const data = document.getElementById('inputData');
+            const cat = document.getElementById('selectCategoria').value;
+            const data = document.getElementById('inputData').value;
             if (!desc.value) return;
 
-            // NOVA LÓGICA DE CAPTURA SEGURA
-            const currentUser = auth.currentUser;
-            let nomeFinal = "Eu";
-            
-            if (currentUser) {
-                // Tenta pegar o nome direto do objeto de autenticação
-                nomeFinal = currentUser.displayName ? currentUser.displayName.split(' ')[0] : (currentUser.email ? currentUser.email.split('@')[0] : "Eu");
-            }
-
-            const dadosUpdate = {
-                descricao: desc.value,
-                categoria: cat.value,
-                dataLimite: data.value,
-                autorNome: nomeFinal,
-                autorFoto: currentUser ? currentUser.photoURL : ""
-            };
+            // CAPTURA SEGURA: Se o objeto auth falhar, ele pega o nome que já está escrito no cabeçalho
+            const nomeAutor = document.getElementById('userNameHeader').innerText;
+            const fotoAutor = document.getElementById('userPhoto').src;
 
             if (idEdicao) {
-                await updateDoc(doc(db, "tarefas", idEdicao), dadosUpdate);
+                await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc.value, categoria: cat, dataLimite: data, autorNome: nomeAutor, autorFoto: fotoAutor });
                 idEdicao = null;
                 document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
             } else {
                 await addDoc(collection(db, "tarefas"), { 
-                    ...dadosUpdate,
-                    concluida: false, 
-                    criadoEm: new Date() 
+                    descricao: desc.value, categoria: cat, dataLimite: data, autorFoto: fotoAutor, autorNome: nomeAutor, concluida: false, criadoEm: new Date() 
                 });
             }
             desc.value = "";
         };
 
-        window.toggleTarefa = async (id, s) => {
-            if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
-            await updateDoc(doc(db, "tarefas", id), { concluida: s });
-        };
-
-        window.prepararEdicao = (id, desc, cat, data) => {
-            idEdicao = id;
-            document.getElementById('inputTarefa').value = desc;
-            document.getElementById('selectCategoria').value = cat;
-            document.getElementById('inputData').value = data;
-            document.getElementById('btnSalvar').innerText = "Salvar Alteração";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
         window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
 
         function renderizar() {
             const lista = document.getElementById('listaTarefas');
             const filtrosDiv = document.getElementById('filtrosContainer');
             lista.innerHTML = "";
+            
             const cats = ["Tudo", "Geral", "Alimentação", "Mercado", "Carro", "Igreja", "Educação", "Férias", "Faxina", "Pet", "Manutenção", "Saúde", "Finanças", "Lazer"];
             filtrosDiv.innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
             
@@ -234,26 +196,38 @@
                         </div>
                         <div class="info-container">
                             <span class="tag-cat">${t.categoria}</span>
-                            <span class="texto-tarefa" style="font-weight:600;">${t.descricao}</span>
-                            <span class="data-tarefa">📅 ${formatarDataAmigavel(t.dataLimite)}</span>
+                            <span style="font-weight:600;">${t.descricao}</span>
+                            <span style="font-size:0.7rem; color:#64748b;">📅 ${formatarData(t.dataLimite)}</span>
                         </div>
                     </div>
-                    <div class="acoes">
-                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}')">✏️</button>
-                        <button style="background:none; border:none; cursor:pointer;" onclick="window.eliminar('${t.id}')">🗑️</button>
+                    <div>
+                        <button onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}')" style="background:none; border:none; cursor:pointer;">✏️</button>
+                        <button onclick="window.eliminar('${t.id}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
                     </div>`;
                 lista.appendChild(li);
             });
-            const total = tarefasGlobais.length;
-            const feitas = tarefasGlobais.filter(t => t.concluida).length;
-            const porc = total > 0 ? Math.round((feitas / total) * 100) : 0;
+            const porc = tarefasGlobais.length > 0 ? Math.round((tarefasGlobais.filter(t => t.concluida).length / tarefasGlobais.length) * 100) : 0;
             document.getElementById('progressBar').style.width = porc + "%";
-            document.getElementById('txtPercentual').innerText = porc + "%";
         }
-        document.getElementById('btnDarkMode').onclick = () => { document.body.classList.toggle('dark-mode'); document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙'; };
+
+        window.toggleTarefa = async (id, s) => {
+            if (s) confetti({particleCount:100, spread:70, origin:{y:0.6}});
+            await updateDoc(doc(db, "tarefas", id), { concluida: s });
+        };
+        window.prepararEdicao = (id, d, c, dt) => {
+            idEdicao = id;
+            document.getElementById('inputTarefa').value = d;
+            document.getElementById('selectCategoria').value = c;
+            document.getElementById('inputData').value = dt;
+            document.getElementById('btnSalvar').innerText = "Salvar Alteração";
+            window.scrollTo(0,0);
+        };
+        window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
+        document.getElementById('btnDarkMode').onclick = () => document.body.classList.toggle('dark-mode');
     </script>
 </body>
 </html>
+
 
 
 
