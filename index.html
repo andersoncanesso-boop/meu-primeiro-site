@@ -19,27 +19,25 @@
         .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
         .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
 
-        /* Backup Area */
         .backup-section { display: flex; gap: 10px; margin-bottom: 20px; padding: 10px; background: #f1f5f9; border-radius: 12px; justify-content: center; }
         .btn-backup { font-size: 0.75rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; border: 1px solid #cbd5e1; background: white; font-weight: bold; }
 
-        /* Form */
         .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
         .edit-mode { border-color: #f59e0b; background: #fffbeb; }
         .form-group { display: flex; flex-direction: column; gap: 10px; }
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
         #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
 
-        /* Filters */
         .filtros { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+        .filtros::-webkit-scrollbar { display: none; }
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* List */
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
+        .tag-cat { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--primary); display: block; }
         .acoes { display: flex; gap: 15px; }
     </style>
 </head>
@@ -76,6 +74,9 @@
                             <option value="Mercado">🛒 Mercado</option>
                             <option value="Faxina">🧹 Faxina</option>
                             <option value="Pet">🐾 Pet</option>
+                            <option value="Educação">📚 Educação</option>
+                            <option value="Igreja">⛪ Igreja</option>
+                            <option value="Férias">🌴 Férias</option>
                             <option value="Manutenção">🛠️ Manutenção</option>
                             <option value="Saúde">💊 Saúde</option>
                             <option value="Finanças">💰 Finanças</option>
@@ -119,7 +120,6 @@
         let tarefasGlobais = [];
         let idEdicao = null;
 
-        // AUTH
         document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
@@ -137,7 +137,6 @@
             }
         });
 
-        // ESCUTAR BANCO
         function escutarTarefas() {
             onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snapshot) => {
                 tarefasGlobais = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -145,73 +144,41 @@
             });
         }
 
-        // SALVAR / EDITAR
         document.getElementById('btnSalvar').onclick = async () => {
             const desc = document.getElementById('inputTarefa');
             const cat = document.getElementById('selectCategoria');
             const data = document.getElementById('inputData');
-
             if (!desc.value) return;
-
             if (idEdicao) {
-                await updateDoc(doc(db, "tarefas", idEdicao), {
-                    descricao: desc.value, categoria: cat.value, dataLimite: data.value
-                });
+                await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc.value, categoria: cat.value, dataLimite: data.value });
                 limparForm();
             } else {
-                await addDoc(collection(db, "tarefas"), {
-                    descricao: desc.value, categoria: cat.value, dataLimite: data.value,
-                    autorFoto: auth.currentUser.photoURL, concluida: false, criadoEm: new Date()
-                });
+                await addDoc(collection(db, "tarefas"), { descricao: desc.value, categoria: cat.value, dataLimite: data.value, autorFoto: auth.currentUser.photoURL, concluida: false, criadoEm: new Date() });
                 desc.value = "";
             }
         };
 
-        // EXPORTAR BACKUP (JSON)
         window.exportarBackup = () => {
-            if (tarefasGlobais.length === 0) return alert("Nenhuma tarefa para exportar.");
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "backup_gestao_familiar.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
+            const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "backup_familiar.json"); dl.click();
         };
 
-        // IMPORTAR BACKUP EM LOTE (BATCH)
         window.importarBackup = (event) => {
             const file = event.target.files[0];
-            if (!file) return;
-
             const reader = new FileReader();
             reader.onload = async (e) => {
-                try {
-                    const tarefasImportadas = JSON.parse(e.target.result);
-                    const batch = writeBatch(db);
-                    
-                    tarefasImportadas.forEach(t => {
-                        const newDocRef = doc(collection(db, "tarefas"));
-                        batch.set(newDocRef, {
-                            descricao: t.descricao,
-                            categoria: t.categoria,
-                            dataLimite: t.dataLimite,
-                            autorFoto: auth.currentUser.photoURL,
-                            concluida: t.concluida || false,
-                            criadoEm: new Date()
-                        });
-                    });
-
-                    await batch.commit();
-                    alert("Restauração concluída com sucesso!");
-                } catch (err) {
-                    alert("Erro ao importar arquivo. Verifique se o formato está correto.");
-                }
+                const tarefas = JSON.parse(e.target.result);
+                const batch = writeBatch(db);
+                tarefas.forEach(t => {
+                    const ref = doc(collection(db, "tarefas"));
+                    batch.set(ref, { descricao: t.descricao, categoria: t.categoria, dataLimite: t.dataLimite, autorFoto: auth.currentUser.photoURL, concluida: t.concluida || false, criadoEm: new Date() });
+                });
+                await batch.commit();
+                alert("Restaurado!");
             };
             reader.readAsText(file);
         };
 
-        // FUNÇÕES DE SUPORTE
         window.toggleTarefa = async (id, s) => {
             if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100, spread:70, origin:{y:0.6}}); }
             await updateDoc(doc(db, "tarefas", id), { concluida: s });
@@ -227,14 +194,7 @@
             document.getElementById('btnCancelarEdicao').classList.remove('hidden');
         };
 
-        function limparForm() {
-            idEdicao = null;
-            document.getElementById('inputTarefa').value = "";
-            document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
-            document.getElementById('formCard').classList.remove('edit-mode');
-            document.getElementById('btnCancelarEdicao').classList.add('hidden');
-        }
-
+        function limparForm() { idEdicao = null; document.getElementById('inputTarefa').value = ""; document.getElementById('btnSalvar').innerText = "Adicionar Tarefa"; document.getElementById('formCard').classList.remove('edit-mode'); document.getElementById('btnCancelarEdicao').classList.add('hidden'); }
         window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
         window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
 
@@ -242,42 +202,25 @@
             const lista = document.getElementById('listaTarefas');
             const filtrosDiv = document.getElementById('filtrosContainer');
             lista.innerHTML = "";
-            
-            const cats = ["Tudo", "Geral", "Mercado", "Faxina", "Pet", "Manutenção", "Saúde", "Finanças", "Lazer"];
+            const cats = ["Tudo", "Geral", "Mercado", "Faxina", "Pet", "Educação", "Igreja", "Férias", "Manutenção", "Saúde", "Finanças", "Lazer"];
             filtrosDiv.innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
-
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
                 li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
-                li.innerHTML = `
-                    <div class="tarefa-main">
-                        <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
-                        <div class="info-container">
-                            <span class="tag-cat">${t.categoria}</span>
-                            <span class="texto-tarefa" style="font-weight:600;">${t.descricao}</span>
-                        </div>
-                    </div>
-                    <div class="acoes">
-                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}')">✏️</button>
-                        <button style="background:none; border:none; cursor:pointer;" onclick="window.eliminar('${t.id}')">🗑️</button>
-                    </div>`;
+                li.innerHTML = `<div class="tarefa-main"><input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)"><div class="info-container"><span class="tag-cat">${t.categoria}</span><span class="texto-tarefa" style="font-weight:600;">${t.descricao}</span></div></div><div class="acoes"><button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}')">✏️</button><button style="background:none; border:none; cursor:pointer;" onclick="window.eliminar('${t.id}')">🗑️</button></div>`;
                 lista.appendChild(li);
             });
-
             const total = tarefasGlobais.length;
             const feitas = tarefasGlobais.filter(t => t.concluida).length;
             const porc = total > 0 ? Math.round((feitas / total) * 100) : 0;
             document.getElementById('progressBar').style.width = porc + "%";
             document.getElementById('txtPercentual').innerText = porc + "%";
         }
-
-        document.getElementById('btnDarkMode').onclick = () => {
-            document.body.classList.toggle('dark-mode');
-            document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-        };
+        document.getElementById('btnDarkMode').onclick = () => { document.body.classList.toggle('dark-mode'); document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙'; };
     </script>
 </body>
 </html>
+
 
 
 
