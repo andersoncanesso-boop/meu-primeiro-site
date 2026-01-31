@@ -10,46 +10,60 @@
         body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; transition: background 0.3s; }
         .container { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 480px; position: relative; }
         .hidden { display: none; }
+        
         .progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; }
         .progress-container { background: var(--border); border-radius: 10px; height: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: var(--primary); width: 0%; height: 100%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
         .user-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
         .user-info img { width: 40px; border-radius: 50%; border: 2px solid var(--primary); }
+
         .backup-section { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         .btn-backup { font-size: 0.7rem; padding: 6px 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: bold; }
+
         .filtros-wrapper { position: relative; display: flex; align-items: center; margin-bottom: 20px; gap: 5px; }
         .filtros { display: flex; gap: 8px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 5px 0; flex: 1; }
         .filtros::-webkit-scrollbar { display: none; }
         .seta-nav { background: var(--card); border: 1px solid var(--border); border-radius: 50%; min-width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; color: var(--text); font-weight: bold; }
+        
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
         #listaTarefas { list-style: none; padding: 0; }
         .tarefa-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--border); }
         .concluida { opacity: 0.4; }
         .concluida .texto-tarefa { text-decoration: line-through; }
+        
         .tarefa-main { display: flex; align-items: center; gap: 10px; flex: 1; }
         .autor-container { display: flex; flex-direction: column; align-items: center; min-width: 55px; text-align: center; }
         .autor-mini { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--primary); }
         .autor-nome-label { font-size: 0.6rem; font-weight: bold; color: #64748b; margin-top: 2px; }
+
         .info-container { display: flex; flex-direction: column; flex: 1; margin-left: 5px; }
         .tag-cat { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; color: var(--primary); }
         .texto-tarefa { font-weight: 600; text-transform: capitalize; }
         .texto-tarefa::first-letter { text-transform: uppercase; }
+
         .data-tarefa { font-size: 0.75rem; color: #64748b; font-weight: 500; }
         .acoes { display: flex; gap: 15px; }
+        
         .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
-        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); width: 100%; box-sizing: border-box; }
-        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-        #statusLogin { text-align: center; color: white; background: #ef4444; font-size: 0.85rem; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; display: none; }
+        .form-group { display: flex; flex-direction: column; gap: 10px; }
+        input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
+        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        
+        #statusLogin { text-align: center; color: white; background: #ef4444; font-size: 0.85rem; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; display: none; border: 2px solid #b91c1c; }
     </style>
 </head>
 <body>
+
     <div class="container">
         <div id="telaLogin">
             <h1 style="text-align:center; color: #2563eb;">🏠 Gestão Familiar</h1>
             <div id="statusLogin"></div>
             <button id="btnLogin" style="width:100%; padding:16px; border-radius:12px; background:white; border:1px solid #ddd; font-weight:bold; cursor:pointer;">Entrar com Google</button>
         </div>
+
         <div id="telaApp" class="hidden">
             <div class="user-header">
                 <div class="user-info"><img id="userPhoto" src=""> <span id="userName" style="font-weight: bold; margin-left: 10px;"></span></div>
@@ -58,70 +72,111 @@
                     <button id="btnLogout" style="color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold; margin-left:10px;">Sair</button>
                 </div>
             </div>
+
             <div class="backup-section">
                 <button class="btn-backup" onclick="window.exportarBackup()">📥 Backup</button>
                 <button class="btn-backup" onclick="document.getElementById('inputFile').click()">📤 Restaurar</button>
                 <input type="file" id="inputFile" class="hidden" accept=".json" onchange="window.importarBackup(event)">
             </div>
+
             <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
             <div class="progress-container"><div id="progressBar"></div></div>
+
             <div class="form-card">
-                <input type="text" id="inputNomeManual" placeholder="Seu nome">
-                <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?" style="margin-top:10px;">
-                <div style="display: flex; gap: 8px; margin-top:10px;">
-                    <select id="selectCategoria" style="flex: 1;">
-                        <option value="Geral">📂 Geral</option>
-                        <option value="Alimentação">🧑‍🍳 Alimentação</option>
-                        <option value="Mercado">🛒 Mercado</option>
-                        <option value="Carro">🚗 Carro</option>
-                        <option value="Igreja">⛪ Igreja</option>
-                        <option value="Educação">📚 Educação</option>
-                        <option value="Férias">🌴 Férias</option>
-                        <option value="Faxina">🧹 Faxina</option>
-                        <option value="Pet">🐾 Pet</option>
-                        <option value="Manutenção">🛠️ Manutenção</option>
-                        <option value="Saúde">💊 Saúde</option>
-                        <option value="Finanças">💰 Finanças</option>
-                        <option value="Lazer">🍕 Lazer</option>
-                    </select>
-                    <input type="date" id="inputData" style="flex: 1;">
+                <div class="form-group">
+                    <input type="text" id="inputNomeManual" placeholder="Seu nome (ex: Anderson)">
+                    <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
+                    <div style="display: flex; gap: 8px;">
+                        <select id="selectCategoria" style="flex: 1;">
+                            <option value="Geral">📂 Geral</option>
+                            <option value="Alimentação">🧑‍🍳 Alimentação</option>
+                            <option value="Mercado">🛒 Mercado</option>
+                            <option value="Carro">🚗 Carro</option>
+                            <option value="Igreja">⛪ Igreja</option>
+                            <option value="Educação">📚 Educação</option>
+                            <option value="Férias">🌴 Férias</option>
+                            <option value="Faxina">🧹 Faxina</option>
+                            <option value="Pet">🐾 Pet</option>
+                            <option value="Manutenção">🛠️ Manutenção</option>
+                            <option value="Saúde">💊 Saúde</option>
+                            <option value="Finanças">💰 Finanças</option>
+                            <option value="Lazer">🍕 Lazer</option>
+                        </select>
+                        <input type="date" id="inputData" style="flex: 1;">
+                    </div>
+                    <button id="btnSalvar">Adicionar Tarefa</button>
                 </div>
-                <button id="btnSalvar">Adicionar Tarefa</button>
             </div>
+
             <div class="filtros-wrapper">
                 <button class="seta-nav" onclick="scrollFiltros(-100)">❮</button>
                 <div class="filtros" id="filtrosContainer"></div>
                 <button class="seta-nav" onclick="scrollFiltros(100)">❯</button>
             </div>
+
             <ul id="listaTarefas"></ul>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <audio id="somCheck" src="https://actions.google.com/sounds/v1/foley/beeps_and_bloops_glitchy_digital_ui.ogg"></audio>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        const firebaseConfig = { apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc", authDomain: "gestao-familiar-ac7d6.firebaseapp.com", projectId: "gestao-familiar-ac7d6", storageBucket: "gestao-familiar-ac7d6.firebasestorage.app", messagingSenderId: "1063581141078", appId: "1:1063581141078:web:af2fc67412dbc6fee313f7" };
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc",
+            authDomain: "gestao-familiar-ac7d6.firebaseapp.com",
+            projectId: "gestao-familiar-ac7d6",
+            storageBucket: "gestao-familiar-ac7d6.firebasestorage.app",
+            messagingSenderId: "1063581141078",
+            appId: "1:1063581141078:web:af2fc67412dbc6fee313f7"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+
         const emailsAutorizados = ["anderson.canesso@gmail.com", "adriana.canesso@gmail.com", "melissa.canesso@gmail.com", "felipe.canesso1@gmail.com"];
+
         let categoriaAtiva = "Tudo", tarefasGlobais = [], idEdicao = null;
 
+        function verificarErroAcesso() {
+            if (localStorage.getItem('erroAcesso') === 'true') {
+                const alerta = document.getElementById('statusLogin');
+                alerta.style.display = 'block';
+                alerta.innerText = "🚫 ACESSO NEGADO: Seu e-mail não faz parte da Família Canesso.";
+                localStorage.removeItem('erroAcesso');
+                setTimeout(() => { alerta.style.display = 'none'; }, 6000);
+            }
+        }
+
+        verificarErroAcesso();
+        document.getElementById('btnLogin').onclick = () => { localStorage.removeItem('erroAcesso'); signInWithRedirect(auth, provider); };
+        document.getElementById('btnLogout').onclick = () => signOut(auth);
+
         onAuthStateChanged(auth, async (user) => {
-            if (user && emailsAutorizados.includes(user.email.toLowerCase())) {
-                document.getElementById('telaLogin').classList.add('hidden');
-                document.getElementById('telaApp').classList.remove('hidden');
-                document.getElementById('userName').innerText = user.displayName.split(' ')[0];
-                document.getElementById('userPhoto').src = user.photoURL;
-                document.getElementById('inputNomeManual').value = user.displayName.split(' ')[0];
-                document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
-                escutarTarefas();
-            } else if (user) {
-                await signOut(auth);
-                alert("Acesso negado.");
+            if (user) {
+                const emailUsuario = user.email.toLowerCase();
+                if (emailsAutorizados.includes(emailUsuario)) {
+                    document.getElementById('telaLogin').classList.add('hidden');
+                    document.getElementById('telaApp').classList.remove('hidden');
+                    document.getElementById('userName').innerText = user.displayName ? user.displayName.split(' ')[0] : 'Eu';
+                    document.getElementById('userPhoto').src = user.photoURL;
+                    document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('inputNomeManual').value = user.displayName ? user.displayName.split(' ')[0] : 'Anderson';
+                    escutarTarefas();
+                } else {
+                    localStorage.setItem('erroAcesso', 'true');
+                    await signOut(auth);
+                    window.location.reload();
+                }
+            } else {
+                document.getElementById('telaLogin').classList.remove('hidden');
+                document.getElementById('telaApp').classList.add('hidden');
             }
         });
 
@@ -135,8 +190,9 @@
         document.getElementById('btnSalvar').onclick = async () => {
             const desc = document.getElementById('inputTarefa').value;
             if (!desc) return;
+            const texto = desc.trim().charAt(0).toUpperCase() + desc.trim().slice(1);
             const dados = {
-                descricao: desc.charAt(0).toUpperCase() + desc.slice(1),
+                descricao: texto,
                 categoria: document.getElementById('selectCategoria').value,
                 dataLimite: document.getElementById('inputData').value,
                 autorNome: document.getElementById('inputNomeManual').value,
@@ -155,25 +211,21 @@
         };
 
         window.eliminar = async (id) => {
-            if (confirm("Apagar tarefa?")) await deleteDoc(doc(db, "tarefas", id));
-        };
-
-        window.toggleTarefa = async (id, s) => {
-            if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100}); }
-            await updateDoc(doc(db, "tarefas", id), { concluida: s });
+            if (confirm("Apagar tarefa definitivamente?")) {
+                try {
+                    await deleteDoc(doc(db, "tarefas", id));
+                } catch (e) { alert("Erro ao apagar. Tente novamente."); }
+            }
         };
 
         window.importarBackup = async (ev) => {
-            const file = ev.target.files[0];
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const tarefas = JSON.parse(e.target.result);
                 if (confirm("Isso irá substituir as tarefas atuais. Continuar?")) {
                     const batch = writeBatch(db);
-                    // Apaga as atuais
                     const atual = await getDocs(collection(db, "tarefas"));
                     atual.forEach(d => batch.delete(d.ref));
-                    // Adiciona novas
                     tarefas.forEach(t => {
                         const ref = doc(collection(db, "tarefas"));
                         batch.set(ref, { 
@@ -186,7 +238,12 @@
                     alert("Restauração concluída!");
                 }
             };
-            reader.readAsText(file);
+            reader.readAsText(ev.target.files[0]);
+        };
+
+        window.toggleTarefa = async (id, s) => {
+            if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100}); }
+            await updateDoc(doc(db, "tarefas", id), { concluida: s });
         };
 
         window.exportarBackup = () => {
@@ -206,6 +263,13 @@
             window.scrollTo(0,0);
         };
 
+        function formatarDataAmigavel(d) {
+            if (!d) return "";
+            const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+            const obj = new Date(d + "T12:00:00");
+            return `${String(obj.getDate()).padStart(2, '0')}/${String(obj.getMonth() + 1).padStart(2, '0')} (${dias[obj.getDay()]})`;
+        }
+
         function renderizar() {
             const lista = document.getElementById('listaTarefas');
             lista.innerHTML = "";
@@ -222,12 +286,12 @@
                         <div class="info-container">
                             <span class="tag-cat">${t.categoria}</span>
                             <span class="texto-tarefa">${t.descricao}</span>
-                            <span class="data-tarefa">📅 ${t.dataLimite}</span>
+                            <span class="data-tarefa">📅 ${formatarDataAmigavel(t.dataLimite)}</span>
                         </div>
                     </div>
                     <div class="acoes">
-                        <button onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.autorNome}')">✏️</button>
-                        <button onclick="window.eliminar('${t.id}')">🗑️</button>
+                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.autorNome}')">✏️</button>
+                        <button style="background:none; border:none; cursor:pointer;" onclick="window.eliminar('${t.id}')">🗑️</button>
                     </div>`;
                 lista.appendChild(li);
             });
@@ -235,14 +299,9 @@
             document.getElementById('progressBar').style.width = porc + "%";
             document.getElementById('txtPercentual').innerText = porc + "%";
         }
-        document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
-        document.getElementById('btnLogout').onclick = () => signOut(auth);
-        document.getElementById('btnDarkMode').onclick = () => document.body.classList.toggle('dark-mode');
     </script>
 </body>
 </html>
-
-
 
 
 
