@@ -144,20 +144,6 @@
 
         let categoriaAtiva = "Tudo", tarefasGlobais = [], idEdicao = null;
 
-        function verificarErroAcesso() {
-            if (localStorage.getItem('erroAcesso') === 'true') {
-                const alerta = document.getElementById('statusLogin');
-                alerta.style.display = 'block';
-                alerta.innerText = "🚫 ACESSO NEGADO: Seu e-mail não faz parte da Família Canesso.";
-                localStorage.removeItem('erroAcesso');
-                setTimeout(() => { alerta.style.display = 'none'; }, 6000);
-            }
-        }
-
-        verificarErroAcesso();
-        document.getElementById('btnLogin').onclick = () => { localStorage.removeItem('erroAcesso'); signInWithRedirect(auth, provider); };
-        document.getElementById('btnLogout').onclick = () => signOut(auth);
-
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const emailUsuario = user.email.toLowerCase();
@@ -187,12 +173,57 @@
             });
         }
 
+        // FUNÇÃO DE ELIMINAR TOTALMENTE REESCRITA E FORÇADA
+        window.eliminar = async (id) => {
+            if (confirm("Deseja apagar esta tarefa definitivamente?")) {
+                try {
+                    // Remove o item da tela imediatamente para dar feedback visual
+                    const li = document.querySelector(`button[onclick*="${id}"]`).closest('.tarefa-item');
+                    if(li) li.style.display = 'none';
+
+                    // Comando direto ao Firebase
+                    const tarefaRef = doc(db, "tarefas", String(id));
+                    await deleteDoc(tarefaRef);
+                    console.log("Sucesso ao deletar ID:", id);
+                } catch (error) {
+                    console.error("Erro ao deletar:", error);
+                    alert("Erro ao sincronizar exclusão. Tente recarregar a página.");
+                    escutarTarefas(); // Força atualização se falhar
+                }
+            }
+        };
+
+        // RESTAURAÇÃO LIMPA - GERA NOVOS IDS VÁLIDOS
+        window.importarBackup = async (ev) => {
+            const file = ev.target.files[0];
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const tarefas = JSON.parse(e.target.result);
+                if (confirm("Isso irá substituir as tarefas atuais por tarefas com novos IDs. Continuar?")) {
+                    const batch = writeBatch(db);
+                    const atual = await getDocs(collection(db, "tarefas"));
+                    atual.forEach(d => batch.delete(d.ref));
+                    
+                    tarefas.forEach(t => {
+                        const ref = doc(collection(db, "tarefas"));
+                        batch.set(ref, { 
+                            descricao: t.descricao, categoria: t.categoria, dataLimite: t.dataLimite, 
+                            autorNome: t.autorNome, autorFoto: t.autorFoto, concluida: t.concluida || false, 
+                            criadoEm: new Date() 
+                        });
+                    });
+                    await batch.commit();
+                    alert("Dados restaurados com sucesso!");
+                }
+            };
+            reader.readAsText(file);
+        };
+
         document.getElementById('btnSalvar').onclick = async () => {
             const desc = document.getElementById('inputTarefa').value;
             if (!desc) return;
-            const texto = desc.trim().charAt(0).toUpperCase() + desc.trim().slice(1);
             const dados = {
-                descricao: texto,
+                descricao: desc.trim().charAt(0).toUpperCase() + desc.trim().slice(1),
                 categoria: document.getElementById('selectCategoria').value,
                 dataLimite: document.getElementById('inputData').value,
                 autorNome: document.getElementById('inputNomeManual').value,
@@ -208,37 +239,6 @@
                 await addDoc(collection(db, "tarefas"), dados);
             }
             document.getElementById('inputTarefa').value = "";
-        };
-
-        window.eliminar = async (id) => {
-            if (confirm("Apagar tarefa definitivamente?")) {
-                try {
-                    await deleteDoc(doc(db, "tarefas", id));
-                } catch (e) { alert("Erro ao apagar. Tente novamente."); }
-            }
-        };
-
-        window.importarBackup = async (ev) => {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const tarefas = JSON.parse(e.target.result);
-                if (confirm("Isso irá substituir as tarefas atuais. Continuar?")) {
-                    const batch = writeBatch(db);
-                    const atual = await getDocs(collection(db, "tarefas"));
-                    atual.forEach(d => batch.delete(d.ref));
-                    tarefas.forEach(t => {
-                        const ref = doc(collection(db, "tarefas"));
-                        batch.set(ref, { 
-                            descricao: t.descricao, categoria: t.categoria, dataLimite: t.dataLimite, 
-                            autorNome: t.autorNome, autorFoto: t.autorFoto, concluida: t.concluida || false, 
-                            criadoEm: new Date() 
-                        });
-                    });
-                    await batch.commit();
-                    alert("Restauração concluída!");
-                }
-            };
-            reader.readAsText(ev.target.files[0]);
         };
 
         window.toggleTarefa = async (id, s) => {
@@ -299,6 +299,7 @@
             document.getElementById('progressBar').style.width = porc + "%";
             document.getElementById('txtPercentual').innerText = porc + "%";
         }
+        document.getElementById('btnDarkMode').onclick = () => { document.body.classList.toggle('dark-mode'); document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙'; };
     </script>
 </body>
 </html>
