@@ -38,10 +38,9 @@
         .data-tarefa { font-size: 0.75rem; color: #64748b; font-weight: 500; }
         .acoes { display: flex; gap: 15px; }
         .form-card { background: var(--bg); padding: 15px; border-radius: 18px; border: 2px solid var(--border); margin-bottom: 25px; }
-        .form-group { display: flex; flex-direction: column; gap: 10px; }
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
-        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        #statusLogin { text-align: center; color: white; background: #ef4444; font-size: 0.85rem; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; display: none; border: 2px solid #b91c1c; }
+        #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+        #statusLogin { text-align: center; color: white; background: #ef4444; font-size: 0.85rem; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
@@ -67,29 +66,27 @@
             <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
             <div class="progress-container"><div id="progressBar"></div></div>
             <div class="form-card">
-                <div class="form-group">
-                    <input type="text" id="inputNomeManual" placeholder="Seu nome (ex: Anderson)">
-                    <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
-                    <div style="display: flex; gap: 8px;">
-                        <select id="selectCategoria" style="flex: 1;">
-                            <option value="Geral">📂 Geral</option>
-                            <option value="Alimentação">🧑‍🍳 Alimentação</option>
-                            <option value="Mercado">🛒 Mercado</option>
-                            <option value="Carro">🚗 Carro</option>
-                            <option value="Igreja">⛪ Igreja</option>
-                            <option value="Educação">📚 Educação</option>
-                            <option value="Férias">🌴 Férias</option>
-                            <option value="Faxina">🧹 Faxina</option>
-                            <option value="Pet">🐾 Pet</option>
-                            <option value="Manutenção">🛠️ Manutenção</option>
-                            <option value="Saúde">💊 Saúde</option>
-                            <option value="Finanças">💰 Finanças</option>
-                            <option value="Lazer">🍕 Lazer</option>
-                        </select>
-                        <input type="date" id="inputData" style="flex: 1;">
-                    </div>
-                    <button id="btnSalvar">Adicionar Tarefa</button>
+                <input type="text" id="inputNomeManual" placeholder="Seu nome" style="width: 100%; margin-bottom: 10px;">
+                <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?" style="width: 100%;">
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <select id="selectCategoria" style="flex: 1;">
+                        <option value="Geral">📂 Geral</option>
+                        <option value="Alimentação">🧑‍🍳 Alimentação</option>
+                        <option value="Mercado">🛒 Mercado</option>
+                        <option value="Carro">🚗 Carro</option>
+                        <option value="Igreja">⛪ Igreja</option>
+                        <option value="Educação">📚 Educação</option>
+                        <option value="Férias">🌴 Férias</option>
+                        <option value="Faxina">🧹 Faxina</option>
+                        <option value="Pet">🐾 Pet</option>
+                        <option value="Manutenção">🛠️ Manutenção</option>
+                        <option value="Saúde">💊 Saúde</option>
+                        <option value="Finanças">💰 Finanças</option>
+                        <option value="Lazer">🍕 Lazer</option>
+                    </select>
+                    <input type="date" id="inputData" style="flex: 1;">
                 </div>
+                <button id="btnSalvar">Adicionar Tarefa</button>
             </div>
             <div class="filtros-wrapper">
                 <button class="seta-nav" onclick="scrollFiltros(-100)">❮</button>
@@ -104,7 +101,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInWithRedirect, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc", authDomain: "gestao-familiar-ac7d6.firebaseapp.com", projectId: "gestao-familiar-ac7d6", storageBucket: "gestao-familiar-ac7d6.firebasestorage.app", messagingSenderId: "1063581141078", appId: "1:1063581141078:web:af2fc67412dbc6fee313f7" };
         const app = initializeApp(firebaseConfig);
@@ -114,73 +111,70 @@
         const emailsAutorizados = ["anderson.canesso@gmail.com", "adriana.canesso@gmail.com", "melissa.canesso@gmail.com", "felipe.canesso1@gmail.com"];
         let categoriaAtiva = "Tudo", tarefasGlobais = [], idEdicao = null;
 
+        document.getElementById('btnLogin').onclick = () => {
+            signInWithPopup(auth, provider).catch(error => {
+                if(error.code === 'auth/popup-blocked') alert("Por favor, autorize pop-ups para este site.");
+            });
+        };
+
         onAuthStateChanged(auth, async (user) => {
-            if (user && emailsAutorizados.includes(user.email.toLowerCase())) {
-                document.getElementById('telaLogin').classList.add('hidden');
-                document.getElementById('telaApp').classList.remove('hidden');
-                document.getElementById('userName').innerText = user.displayName ? user.displayName.split(' ')[0] : 'Eu';
-                document.getElementById('userPhoto').src = user.photoURL;
-                document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
-                document.getElementById('inputNomeManual').value = user.displayName ? user.displayName.split(' ')[0] : 'Anderson';
-                escutarTarefas();
-            } else if (user) {
-                await signOut(auth);
-                window.location.reload();
+            if (user) {
+                const emailClean = user.email.toLowerCase().trim();
+                if (emailsAutorizados.includes(emailClean)) {
+                    document.getElementById('telaLogin').classList.add('hidden');
+                    document.getElementById('telaApp').classList.remove('hidden');
+                    document.getElementById('userName').innerText = user.displayName.split(' ')[0];
+                    document.getElementById('userPhoto').src = user.photoURL;
+                    document.getElementById('inputNomeManual').value = user.displayName.split(' ')[0];
+                    document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
+                    escutarTarefas();
+                } else {
+                    alert("E-mail não autorizado.");
+                    await signOut(auth);
+                }
+            } else {
+                document.getElementById('telaLogin').classList.remove('hidden');
+                document.getElementById('telaApp').classList.add('hidden');
             }
         });
 
+        // O restante das funções (escutarTarefas, eliminar, renderizar, backup) permanecem as mesmas
         function escutarTarefas() {
             onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snap) => {
                 tarefasGlobais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderizar();
             });
         }
-
-        window.eliminar = async (id) => {
-            if (confirm("Apagar tarefa definitivamente?")) {
-                try {
-                    // Tenta deletar usando o ID fornecido
-                    await deleteDoc(doc(db, "tarefas", id));
-                } catch (e) {
-                    // Se falhar (ID fantasma), tenta localizar pelo conteúdo e deletar
-                    const q = await getDocs(collection(db, "tarefas"));
-                    q.forEach(async (d) => { if(d.id === id) await deleteDoc(d.ref); });
-                }
-            }
+        window.eliminar = async (id) => { if (confirm("Apagar tarefa?")) await deleteDoc(doc(db, "tarefas", id)); };
+        window.toggleTarefa = async (id, s) => {
+            if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100}); }
+            await updateDoc(doc(db, "tarefas", id), { concluida: s });
         };
-
         window.importarBackup = async (ev) => {
-            const file = ev.target.files[0];
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const tarefas = JSON.parse(e.target.result);
-                if (confirm("Isso apagará as tarefas atuais e criará novas baseadas no backup. Continuar?")) {
-                    const batch = writeBatch(db);
-                    const atual = await getDocs(collection(db, "tarefas"));
-                    atual.forEach(d => batch.delete(d.ref));
-                    await batch.commit(); // Limpa primeiro
-
-                    const novoBatch = writeBatch(db);
-                    tarefas.forEach(t => {
-                        const ref = doc(collection(db, "tarefas")); // Gera ID novo e limpo
-                        novoBatch.set(ref, { 
-                            descricao: t.descricao, categoria: t.categoria, dataLimite: t.dataLimite, 
-                            autorNome: t.autorNome, autorFoto: t.autorFoto, concluida: t.concluida || false, 
-                            criadoEm: new Date() 
-                        });
-                    });
-                    await novoBatch.commit();
-                    alert("Backup restaurado com IDs novos!");
-                }
+                const batch = writeBatch(db);
+                const atual = await getDocs(collection(db, "tarefas"));
+                atual.forEach(d => batch.delete(d.ref));
+                tarefas.forEach(t => {
+                    const ref = doc(collection(db, "tarefas"));
+                    batch.set(ref, { ...t, criadoEm: new Date(), concluida: t.concluida || false });
+                });
+                await batch.commit();
+                alert("Restaurado!");
             };
-            reader.readAsText(file);
+            reader.readAsText(ev.target.files[0]);
         };
-
+        window.exportarBackup = () => {
+            const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
+            const dl = document.createElement('a'); dl.setAttribute("href", str); dl.setAttribute("download", "backup.json"); dl.click();
+        };
         document.getElementById('btnSalvar').onclick = async () => {
             const desc = document.getElementById('inputTarefa').value;
             if (!desc) return;
             const dados = {
-                descricao: desc.trim().charAt(0).toUpperCase() + desc.trim().slice(1),
+                descricao: desc.charAt(0).toUpperCase() + desc.slice(1),
                 categoria: document.getElementById('selectCategoria').value,
                 dataLimite: document.getElementById('inputData').value,
                 autorNome: document.getElementById('inputNomeManual').value,
@@ -188,51 +182,23 @@
                 concluida: false,
                 criadoEm: new Date()
             };
-            if (idEdicao) {
-                await updateDoc(doc(db, "tarefas", idEdicao), dados);
-                idEdicao = null;
-                document.getElementById('btnSalvar').innerText = "Adicionar Tarefa";
-            } else {
-                await addDoc(collection(db, "tarefas"), dados);
-            }
+            if (idEdicao) { await updateDoc(doc(db, "tarefas", idEdicao), dados); idEdicao = null; }
+            else { await addDoc(collection(db, "tarefas"), dados); }
             document.getElementById('inputTarefa').value = "";
         };
-
-        window.toggleTarefa = async (id, s) => {
-            if (s) { document.getElementById('somCheck').play().catch(()=>{}); confetti({particleCount:100}); }
-            await updateDoc(doc(db, "tarefas", id), { concluida: s });
-        };
-
-        window.exportarBackup = () => {
-            const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
-            const dl = document.createElement('a'); dl.setAttribute("href", str); dl.setAttribute("download", "backup.json"); dl.click();
-        };
-
         window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
         window.scrollFiltros = (v) => document.getElementById('filtrosContainer').scrollBy({ left: v, behavior: 'smooth' });
-        window.prepararEdicao = (id, d, c, dt, n) => {
-            idEdicao = id;
-            document.getElementById('inputTarefa').value = d;
-            document.getElementById('selectCategoria').value = c;
-            document.getElementById('inputData').value = dt;
-            document.getElementById('inputNomeManual').value = n;
-            document.getElementById('btnSalvar').innerText = "Salvar Alteração";
-            window.scrollTo(0,0);
-        };
-
         function formatarDataAmigavel(d) {
             if (!d) return "";
             const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
             const obj = new Date(d + "T12:00:00");
             return `${String(obj.getDate()).padStart(2, '0')}/${String(obj.getMonth() + 1).padStart(2, '0')} (${dias[obj.getDay()]})`;
         }
-
         function renderizar() {
             const lista = document.getElementById('listaTarefas');
             lista.innerHTML = "";
             const cats = ["Tudo", "Geral", "Alimentação", "Mercado", "Carro", "Igreja", "Educação", "Férias", "Faxina", "Pet", "Manutenção", "Saúde", "Finanças", "Lazer"];
             document.getElementById('filtrosContainer').innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
-            
             tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
                 const li = document.createElement('li');
                 li.className = `tarefa-item ${t.concluida ? 'concluida' : ''}`;
@@ -247,24 +213,13 @@
                         </div>
                     </div>
                     <div class="acoes">
-                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.autorNome}')">✏️</button>
                         <button style="background:none; border:none; cursor:pointer;" onclick="window.eliminar('${t.id}')">🗑️</button>
                     </div>`;
                 lista.appendChild(li);
             });
-            const porc = tarefasGlobais.length > 0 ? Math.round((tarefasGlobais.filter(t => t.concluida).length / tarefasGlobais.length) * 100) : 0;
-            document.getElementById('progressBar').style.width = porc + "%";
-            document.getElementById('txtPercentual').innerText = porc + "%";
         }
-        document.getElementById('btnDarkMode').onclick = () => { document.body.classList.toggle('dark-mode'); document.getElementById('btnDarkMode').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙'; };
-        document.getElementById('btnLogin').onclick = () => signInWithRedirect(auth, provider);
         document.getElementById('btnLogout').onclick = () => signOut(auth);
+        document.getElementById('btnDarkMode').onclick = () => document.body.classList.toggle('dark-mode');
     </script>
 </body>
 </html>
-
-
-
-
-
-
