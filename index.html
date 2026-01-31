@@ -55,7 +55,6 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <div id="telaLogin">
             <h1 style="text-align:center; color: #2563eb;">🏠 Gestão Familiar</h1>
@@ -81,7 +80,7 @@
             <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
             <div class="progress-container"><div id="progressBar"></div></div>
 
-            <div class="form-card" id="formCard">
+            <div class="form-card">
                 <div class="form-group">
                     <input type="text" id="inputNomeManual" placeholder="Seu nome (ex: Anderson)">
                     <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
@@ -206,15 +205,16 @@
             document.getElementById('inputTarefa').value = "";
         };
 
-        // FUNÇÃO DE ELIMINAR BLINDADA
+        // FUNÇÃO DE ELIMINAR BLINDADA - REVISADA
         window.eliminar = async (id) => {
-            if (confirm("Tem certeza que deseja apagar esta tarefa?")) {
+            if (confirm("Deseja apagar esta tarefa definitivamente?")) {
                 try {
-                    await deleteDoc(doc(db, "tarefas", id));
-                    // A renderização acontece automaticamente pelo onSnapshot
+                    const tarefaRef = doc(db, "tarefas", String(id));
+                    await deleteDoc(tarefaRef);
+                    console.log("Tarefa removida:", id);
                 } catch (error) {
-                    alert("Erro ao apagar. Tente novamente.");
-                    console.error("Erro:", error);
+                    console.error("Erro ao deletar:", error);
+                    alert("Não foi possível apagar. Verifique sua conexão.");
                 }
             }
         };
@@ -285,6 +285,7 @@
     </script>
 </body>
 </html>
+
 
 
 
