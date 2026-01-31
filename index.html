@@ -51,7 +51,6 @@
         .form-group { display: flex; flex-direction: column; gap: 10px; }
         input, select { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); outline: none; }
         #btnSalvar { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        
         #statusLogin { text-align: center; color: white; background: #ef4444; font-size: 0.85rem; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; display: none; border: 2px solid #b91c1c; }
     </style>
 </head>
@@ -82,7 +81,7 @@
             <div class="progress-header"><span>Progresso</span> <span id="txtPercentual">0%</span></div>
             <div class="progress-container"><div id="progressBar"></div></div>
 
-            <div class="form-card">
+            <div class="form-card" id="formCard">
                 <div class="form-group">
                     <input type="text" id="inputNomeManual" placeholder="Seu nome (ex: Anderson)">
                     <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
@@ -140,12 +139,7 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        const emailsAutorizados = [
-            "anderson.canesso@gmail.com",
-            "adriana.canesso@gmail.com",
-            "melissa.canesso@gmail.com",
-            "felipe.canesso1@gmail.com"
-        ];
+        const emailsAutorizados = ["anderson.canesso@gmail.com", "adriana.canesso@gmail.com", "melissa.canesso@gmail.com", "felipe.canesso1@gmail.com"];
 
         let categoriaAtiva = "Tudo";
         let tarefasGlobais = [];
@@ -155,34 +149,27 @@
             if (localStorage.getItem('erroAcesso') === 'true') {
                 const alerta = document.getElementById('statusLogin');
                 alerta.style.display = 'block';
-                alerta.innerText = "🚫 ACESSO NEGADO: Seu e-mail não faz parte da Família Canesso.";
+                alerta.innerText = "🚫 ACESSO NEGADO: E-mail não autorizado.";
                 localStorage.removeItem('erroAcesso');
                 setTimeout(() => { alerta.style.display = 'none'; }, 6000);
             }
         }
 
         verificarErroAcesso();
-
-        document.getElementById('btnLogin').onclick = () => {
-            localStorage.removeItem('erroAcesso');
-            signInWithRedirect(auth, provider);
-        };
-        
+        document.getElementById('btnLogin').onclick = () => { localStorage.removeItem('erroAcesso'); signInWithRedirect(auth, provider); };
         document.getElementById('btnLogout').onclick = () => signOut(auth);
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // NORMALIZAÇÃO RADICAL DO EMAIL (Minúsculo e sem espaços)
                 const emailUsuario = user.email.trim().toLowerCase();
                 const listaLimpa = emailsAutorizados.map(e => e.trim().toLowerCase());
-
                 if (listaLimpa.includes(emailUsuario)) {
                     document.getElementById('telaLogin').classList.add('hidden');
                     document.getElementById('telaApp').classList.remove('hidden');
-                    document.getElementById('userName').innerText = user.displayName ? user.displayName.split(' ')[0] : 'Eu';
+                    document.getElementById('userName').innerText = user.displayName.split(' ')[0];
                     document.getElementById('userPhoto').src = user.photoURL;
                     document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
-                    document.getElementById('inputNomeManual').value = user.displayName ? user.displayName.split(' ')[0] : 'Anderson';
+                    document.getElementById('inputNomeManual').value = user.displayName.split(' ')[0];
                     escutarTarefas();
                 } else {
                     localStorage.setItem('erroAcesso', 'true');
@@ -194,15 +181,6 @@
                 document.getElementById('telaApp').classList.add('hidden');
             }
         });
-
-        window.scrollFiltros = (valor) => document.getElementById('filtrosContainer').scrollBy({ left: valor, behavior: 'smooth' });
-        
-        function formatarDataAmigavel(d) {
-            if (!d) return "";
-            const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-            const obj = new Date(d + "T12:00:00");
-            return `${String(obj.getDate()).padStart(2, '0')}/${String(obj.getMonth() + 1).padStart(2, '0')} (${dias[obj.getDay()]})`;
-        }
 
         function escutarTarefas() {
             onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snap) => {
@@ -228,24 +206,17 @@
             document.getElementById('inputTarefa').value = "";
         };
 
-        window.exportarBackup = () => {
-            const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais));
-            const dl = document.createElement('a'); dl.setAttribute("href", str); dl.setAttribute("download", "backup_familiar.json"); dl.click();
-        };
-
-        window.importarBackup = (ev) => {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const tarefas = JSON.parse(e.target.result);
-                const batch = writeBatch(db);
-                tarefas.forEach(t => {
-                    const ref = doc(collection(db, "tarefas"));
-                    batch.set(ref, { ...t, criadoEm: new Date() });
-                });
-                await batch.commit();
-                alert("Restaurado!");
-            };
-            reader.readAsText(ev.target.files[0]);
+        // FUNÇÃO DE ELIMINAR BLINDADA
+        window.eliminar = async (id) => {
+            if (confirm("Tem certeza que deseja apagar esta tarefa?")) {
+                try {
+                    await deleteDoc(doc(db, "tarefas", id));
+                    // A renderização acontece automaticamente pelo onSnapshot
+                } catch (error) {
+                    alert("Erro ao apagar. Tente novamente.");
+                    console.error("Erro:", error);
+                }
+            }
         };
 
         window.toggleTarefa = async (id, s) => {
@@ -263,9 +234,17 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
-        
+        window.scrollFiltros = (valor) => document.getElementById('filtrosContainer').scrollBy({ left: valor, behavior: 'smooth' });
         window.mudarFiltro = (c) => { categoriaAtiva = c; renderizar(); };
+        window.exportarBackup = () => { const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tarefasGlobais)); const dl = document.createElement('a'); dl.setAttribute("href", str); dl.setAttribute("download", "backup.json"); dl.click(); };
+        window.importarBackup = (ev) => { const reader = new FileReader(); reader.onload = async (e) => { const tarefas = JSON.parse(e.target.result); const batch = writeBatch(db); tarefas.forEach(t => { const ref = doc(collection(db, "tarefas")); batch.set(ref, { ...t, criadoEm: new Date() }); }); await batch.commit(); alert("Restaurado!"); }; reader.readAsText(ev.target.files[0]); };
+
+        function formatarDataAmigavel(d) {
+            if (!d) return "";
+            const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+            const obj = new Date(d + "T12:00:00");
+            return `${String(obj.getDate()).padStart(2, '0')}/${String(obj.getMonth() + 1).padStart(2, '0')} (${dias[obj.getDay()]})`;
+        }
 
         function renderizar() {
             const lista = document.getElementById('listaTarefas');
@@ -291,7 +270,7 @@
                         </div>
                     </div>
                     <div class="acoes">
-                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}', '${t.autorNome}')">✏️</button>
+                        <button style="background:none; border:none; cursor:pointer;" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.autorNome}')">✏️</button>
                         <button style="background:none; border:none; cursor:pointer;" onclick="window.eliminar('${t.id}')">🗑️</button>
                     </div>`;
                 lista.appendChild(li);
@@ -306,7 +285,6 @@
     </script>
 </body>
 </html>
-
 
 
 
