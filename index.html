@@ -64,3 +64,164 @@
                 <select id="selectCategoria" style="flex:1.2;">
                     <option value="GERAL">📂 GERAL</option>
                     <option value="FAXINA">🧹 FAXINA</option>
+                    <option value="ALIMENTAÇÃO">🍴 ALIMENTAÇÃO</option>
+                    <option value="CARRO">🚗 CARRO</option>
+                    <option value="IGREJA">⛪ IGREJA</option>
+                    <option value="EDUCAÇÃO">📚 EDUCAÇÃO</option>
+                    <option value="FÉRIAS">🌴 FÉRIAS</option>
+                    <option value="PET">🐾 PET</option>
+                    <option value="MANUTENÇÃO">🛠️ MANUTENÇÃO</option>
+                    <option value="SAÚDE">💊 SAÚDE</option>
+                    <option value="FINANÇAS">💰 FINANÇAS</option>
+                    <option value="LAZER">🍕 LAZER</option>
+                </select>
+                <input type="date" id="inputData" style="flex:1;">
+            </div>
+            <button id="btnSalvar">Salvar Tarefa</button>
+        </div>
+
+        <div class="filtros" id="filtrosContainer"></div>
+        <ul id="listaTarefas"></ul>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithPopup, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc", authDomain: "gestao-familiar-ac7d6.firebaseapp.com", projectId: "gestao-familiar-ac7d6", storageBucket: "gestao-familiar-ac7d6.firebasestorage.app", messagingSenderId: "1063581141078", appId: "1:1063581141078:web:af2fc67412dbc6fee313f7" };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    const emailsAutorizados = ["anderson.canesso@gmail.com", "adriana.canesso@gmail.com", "melissa.canesso@gmail.com", "felipe.canesso1@gmail.com"];
+
+    let tarefasGlobais = [], categoriaAtiva = "Tudo", idEdicao = null;
+
+    onAuthStateChanged(auth, user => {
+        if (user && emailsAutorizados.includes(user.email.toLowerCase())) {
+            document.getElementById('telaLogin').classList.add('hidden');
+            document.getElementById('telaApp').classList.remove('hidden');
+            document.getElementById('userName').innerText = user.displayName.split(' ')[0];
+            document.getElementById('userPhoto').src = user.photoURL;
+            document.getElementById('inputNomeManual').value = user.displayName.split(' ')[0];
+            document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
+            escutarTarefas();
+        } else if (user) { signOut(auth); alert("Acesso negado."); }
+    });
+
+    function escutarTarefas() {
+        onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), snap => {
+            tarefasGlobais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderizar();
+        });
+    }
+
+    window.toggleTarefa = async (id, s) => await updateDoc(doc(db, "tarefas", id), { concluida: s });
+    window.eliminar = async (id) => { if(confirm("Apagar tarefa?")) await deleteDoc(doc(db, "tarefas", id)); };
+    
+    // CORREÇÃO: Função de Edição globalizada
+    window.prepararEdicao = (id, d, c, dt, n) => {
+        idEdicao = id;
+        document.getElementById('inputTarefa').value = d;
+        document.getElementById('selectCategoria').value = c;
+        document.getElementById('inputData').value = dt;
+        document.getElementById('inputNomeManual').value = n;
+        document.getElementById('btnSalvar').innerText = "Atualizar Tarefa";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    document.getElementById('btnSalvar').onclick = async () => {
+        const desc = document.getElementById('inputTarefa').value;
+        if (!desc) return;
+        
+        const dados = {
+            descricao: desc.charAt(0).toUpperCase() + desc.slice(1),
+            categoria: document.getElementById('selectCategoria').value,
+            dataLimite: document.getElementById('inputData').value,
+            autorNome: document.getElementById('inputNomeManual').value,
+            autorFoto: auth.currentUser.photoURL
+        };
+
+        try {
+            if (idEdicao) {
+                // CORREÇÃO: Agora ele atualiza corretamente no Firebase
+                await updateDoc(doc(db, "tarefas", idEdicao), dados);
+                idEdicao = null;
+                document.getElementById('btnSalvar').innerText = "Salvar Tarefa";
+            } else {
+                await addDoc(collection(db, "tarefas"), { ...dados, concluida: false, criadoEm: new Date() });
+            }
+            document.getElementById('inputTarefa').value = "";
+        } catch (error) {
+            console.error("Erro ao salvar:", error);
+            alert("Erro ao salvar tarefa.");
+        }
+    };
+
+    function renderizar() {
+        const lista = document.getElementById('listaTarefas');
+        lista.innerHTML = "";
+        const cats = ["Tudo", "GERAL", "FAXINA", "ALIMENTAÇÃO", "CARRO", "IGREJA", "EDUCAÇÃO", "FÉRIAS", "PET", "MANUTENÇÃO", "SAÚDE", "FINANÇAS", "LAZER"];
+        document.getElementById('filtrosContainer').innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
+
+        tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
+            const dataF = t.dataLimite ? t.dataLimite.split('-').reverse().join('/') : "";
+            const divSwipe = document.createElement('div');
+            divSwipe.className = 'swipe-container';
+            divSwipe.innerHTML = `
+                <div class="swipe-bg"><span>Apagar 🗑️</span></div>
+                <div class="tarefa-card ${t.concluida ? 'concluida' : ''}" 
+                     data-id="${t.id}"
+                     ontouchstart="handleTouchStart(event)" 
+                     ontouchmove="handleTouchMove(event)" 
+                     ontouchend="handleTouchEnd(event)">
+                    <div class="check-area">
+                        <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
+                    </div>
+                    <div class="autor-area">
+                        <img src="${t.autorFoto}" class="autor-foto">
+                        <span class="autor-nome">${t.autorNome}</span>
+                    </div>
+                    <div class="info-area">
+                        <span class="cat-label">${t.categoria}</span>
+                        <span class="tarefa-titulo">${t.descricao}</span>
+                        <span class="tarefa-data">🗓️ ${dataF}</span>
+                    </div>
+                    <div class="acoes-area">
+                        <button class="btn-acao" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.autorNome}')">✏️</button>
+                        <button class="btn-acao" onclick="window.eliminar('${t.id}')">🗑️</button>
+                    </div>
+                </div>`;
+            lista.appendChild(divSwipe);
+        });
+
+        const total = tarefasGlobais.length;
+        const feitas = tarefasGlobais.filter(t => t.concluida).length;
+        const porc = total > 0 ? Math.round((feitas / total) * 100) : 0;
+        document.getElementById('progressBar').style.width = porc + "%";
+        document.getElementById('txtPercent').innerText = porc + "%";
+    }
+
+    let touchStartX = 0, currentElement = null;
+    window.handleTouchStart = (e) => { touchStartX = e.touches[0].clientX; currentElement = e.currentTarget; currentElement.style.transition = 'none'; };
+    window.handleTouchMove = (e) => { 
+        const diff = e.touches[0].clientX - touchStartX;
+        if (diff < 0 && diff > -100) currentElement.style.transform = `translateX(${diff}px)`;
+    };
+    window.handleTouchEnd = (e) => {
+        const diff = e.changedTouches[0].clientX - touchStartX;
+        currentElement.style.transition = 'transform 0.3s ease';
+        if (diff < -70) {
+            currentElement.style.transform = `translateX(-100%)`;
+            setTimeout(() => window.eliminar(currentElement.dataset.id), 300);
+        } else currentElement.style.transform = `translateX(0)`;
+    };
+
+    window.mudarFiltro = c => { categoriaAtiva = c; renderizar(); };
+    document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
+    document.getElementById('btnLogout').onclick = () => signOut(auth);
+</script>
+</body>
+</html>
