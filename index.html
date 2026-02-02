@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão Familiar - Dashboard Pro</title>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; --danger: #ef4444; --success: #22c55e; --warning: #f59e0b; }
+        :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; --danger: #ef4444; --success: #22c55e; }
+        body.dark-mode { --bg: #18191a; --card: #242526; --text: #e4e6eb; --border: #3e4042; --primary: #4589ff; --secondary: #b0b3b8; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; overflow-x: hidden; }
         .container { width: 100%; max-width: 500px; }
         .hidden { display: none; }
@@ -18,7 +19,7 @@
         .mini-bar { background: var(--border); height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden; }
         .mini-progress { height: 100%; background: var(--success); transition: 0.5s; width: 0%; }
 
-        /* Estilos de Cards e Swipe */
+        /* Estilos de Cards */
         .swipe-container { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 12px; touch-action: pan-y; }
         .swipe-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 100%; background: var(--danger); display: flex; align-items: center; justify-content: flex-end; padding-right: 20px; color: white; font-weight: bold; z-index: 1; }
         .tarefa-card { background: var(--card); border-radius: 12px; padding: 16px; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1); border: 1px solid var(--border); position: relative; z-index: 2; transition: transform 0.2s; }
@@ -29,14 +30,15 @@
         .cat-label { font-size: 0.6rem; font-weight: 800; color: var(--primary); }
         .tarefa-titulo { font-size: 0.95rem; font-weight: 600; display: block; }
         .tarefa-data { font-size: 0.75rem; color: var(--secondary); }
-        .recorrencia-tag { color: var(--success); font-weight: bold; font-size: 0.65rem; }
-
-        .btn-acao { background: none; border: none; cursor: pointer; font-size: 1rem; opacity: 0.4; }
+        
+        .acoes-area { display: flex; gap: 12px; margin-left: 10px; }
+        .btn-acao { background: none; border: none; cursor: pointer; font-size: 1.1rem; opacity: 0.5; transition: 0.2s; }
+        .btn-acao:hover { opacity: 1; }
         .concluida { opacity: 0.5; }
         .concluida .tarefa-titulo { text-decoration: line-through; }
 
         /* Form */
-        .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; }
+        .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         input, select, #btnSalvar { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; }
         #btnSalvar { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; }
         
@@ -78,157 +80,4 @@
         </div>
 
         <div class="form-card">
-            <input type="text" id="inputTarefa" placeholder="O que temos para hoje?">
-            <div style="display:flex; gap:5px;">
-                <select id="selectCategoria" style="flex:1;">
-                    <option value="GERAL">📂 GERAL</option><option value="FAXINA">🧹 FAXINA</option>
-                    <option value="ALIMENTAÇÃO">🍴 ALIMENTAÇÃO</option><option value="CARRO">🚗 CARRO</option>
-                    <option value="IGREJA">⛪ IGREJA</option><option value="EDUCAÇÃO">📚 EDUCAÇÃO</option>
-                    <option value="PET">🐾 PET</option><option value="SAÚDE">💊 SAÚDE</option>
-                    <option value="FINANÇAS">💰 FINANÇAS</option>
-                </select>
-                <select id="selectRecorrencia" style="flex:1;">
-                    <option value="nenhuma">📍 Única</option>
-                    <option value="diaria">🔄 Diária</option>
-                    <option value="mensal">📅 Mensal</option>
-                    <option value="semestral">🗓️ Semestral</option>
-                    <option value="anual">🎆 Anual</option>
-                </select>
-            </div>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="inputNomeManual" style="flex:1;" placeholder="Nome">
-                <input type="date" id="inputData" style="flex:1;">
-            </div>
-            <button id="btnSalvar">Salvar Tarefa</button>
-        </div>
-
-        <div class="filtros" id="filtrosContainer"></div>
-        <ul id="listaTarefas" style="list-style:none; padding:0;"></ul>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, signInWithPopup, onAuthStateChanged, signOut, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    const firebaseConfig = { apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc", authDomain: "gestao-familiar-ac7d6.firebaseapp.com", projectId: "gestao-familiar-ac7d6", storageBucket: "gestao-familiar-ac7d6.firebasestorage.app", messagingSenderId: "1063581141078", appId: "1:1063581141078:web:af2fc67412dbc6fee313f7" };
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    let tarefasGlobais = [], categoriaAtiva = "Tudo", idEdicao = null;
-
-    onAuthStateChanged(auth, user => {
-        if (user) {
-            document.getElementById('telaLogin').classList.add('hidden');
-            document.getElementById('telaApp').classList.remove('hidden');
-            document.getElementById('inputNomeManual').value = user.displayName.split(' ')[0];
-            document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
-            escutarTarefas();
-        }
-    });
-
-    function escutarTarefas() {
-        onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), snap => {
-            tarefasGlobais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            renderizar();
-        });
-    }
-
-    // LÓGICA DE RECORRÊNCIA E CÁLCULO
-    window.toggleTarefa = async (id, status) => {
-        const t = tarefasGlobais.find(x => x.id === id);
-        await updateDoc(doc(db, "tarefas", id), { concluida: status });
-        if (status && t.recorrencia && t.recorrencia !== "nenhuma") {
-            const novaData = calcularProximaData(t.dataLimite, t.recorrencia);
-            await addDoc(collection(db, "tarefas"), { ...t, id: null, concluida: false, dataLimite: novaData, criadoEm: new Date() });
-        }
-    };
-
-    function calcularProximaData(dt, tipo) {
-        let d = new Date(dt + "T12:00:00");
-        if (tipo === "diaria") d.setDate(d.getDate() + 1);
-        else if (tipo === "mensal") d.setMonth(d.getMonth() + 1);
-        else if (tipo === "semestral") d.setMonth(d.getMonth() + 6);
-        else if (tipo === "anual") d.setFullYear(d.getFullYear() + 1);
-        return d.toISOString().split('T')[0];
-    }
-
-    function renderizar() {
-        const lista = document.getElementById('listaTarefas');
-        lista.innerHTML = "";
-        
-        // Dashboards de Progresso
-        const hoje = new Date().toISOString().split('T')[0];
-        const mesAtual = hoje.substring(0, 7);
-
-        const calcular = (filtro) => {
-            const total = tarefasGlobais.filter(filtro).length;
-            const feitas = tarefasGlobais.filter(t => filtro(t) && t.concluida).length;
-            return total > 0 ? Math.round((feitas / total) * 100) : 0;
-        };
-
-        const pDia = calcular(t => t.dataLimite === hoje || t.recorrencia === 'diaria');
-        const pMes = calcular(t => t.dataLimite.startsWith(mesAtual) || t.recorrencia === 'mensal');
-        const pSem = calcular(t => t.recorrencia === 'semestral');
-        const pAnu = calcular(t => t.recorrencia === 'anual');
-
-        document.getElementById('valDia').innerText = pDia + "%"; document.getElementById('barDia').style.width = pDia + "%";
-        document.getElementById('valMes').innerText = pMes + "%"; document.getElementById('barMes').style.width = pMes + "%";
-        document.getElementById('valSem').innerText = pSem + "%"; document.getElementById('barSem').style.width = pSem + "%";
-        document.getElementById('valAnu').innerText = pAnu + "%"; document.getElementById('barAnu').style.width = pAnu + "%";
-
-        // Filtros e Lista
-        const cats = ["Tudo", "GERAL", "FAXINA", "ALIMENTAÇÃO", "CARRO", "IGREJA", "EDUCAÇÃO", "PET", "SAÚDE", "FINANÇAS"];
-        document.getElementById('filtrosContainer').innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
-
-        tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
-            const item = document.createElement('div');
-            item.className = 'swipe-container';
-            item.innerHTML = `
-                <div class="swipe-bg">Apagar 🗑️</div>
-                <div class="tarefa-card ${t.concluida ? 'concluida' : ''}" data-id="${t.id}" ontouchstart="hStart(event)" ontouchmove="hMove(event)" ontouchend="hEnd(event)">
-                    <div class="check-area"><input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)"></div>
-                    <img src="${t.autorFoto}" class="autor-foto">
-                    <div class="info-area">
-                        <span class="cat-label">${t.categoria} ${t.recorrencia != 'nenhuma' ? '🔄' : ''}</span>
-                        <span class="tarefa-titulo">${t.descricao}</span>
-                        <span class="tarefa-data">🗓️ ${t.dataLimite.split('-').reverse().join('/')}</span>
-                    </div>
-                    <button class="btn-acao" onclick="window.eliminar('${t.id}')">🗑️</button>
-                </div>`;
-            lista.appendChild(item);
-        });
-    }
-
-    // Funções auxiliares de UI e Firebase
-    window.eliminar = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
-    window.mudarFiltro = c => { categoriaAtiva = c; renderizar(); };
-    document.getElementById('btnSalvar').onclick = async () => {
-        const desc = document.getElementById('inputTarefa').value; if(!desc) return;
-        await addDoc(collection(db, "tarefas"), {
-            descricao: desc, categoria: document.getElementById('selectCategoria').value,
-            recorrencia: document.getElementById('selectRecorrencia').value,
-            dataLimite: document.getElementById('inputData').value,
-            autorNome: document.getElementById('inputNomeManual').value,
-            autorFoto: auth.currentUser.photoURL, concluida: false, criadoEm: new Date()
-        });
-        document.getElementById('inputTarefa').value = "";
-    };
-
-    // SWIPE LOGIC
-    let sX = 0, curr = null;
-    window.hStart = e => { sX = e.touches[0].clientX; curr = e.currentTarget; curr.style.transition = 'none'; };
-    window.hMove = e => { let d = e.touches[0].clientX - sX; if(d < 0 && d > -80) curr.style.transform = `translateX(${d}px)`; };
-    window.hEnd = e => { 
-        curr.style.transition = '0.3s'; 
-        if(e.changedTouches[0].clientX - sX < -60) { curr.style.transform = 'translateX(-100%)'; setTimeout(() => window.eliminar(curr.dataset.id), 300); }
-        else curr.style.transform = 'translateX(0)';
-    };
-
-    document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
-</script>
-</body>
-</html>
+            <input type="text" id="inputTarefa
