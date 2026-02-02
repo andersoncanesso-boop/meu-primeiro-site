@@ -95,7 +95,13 @@
                     <option value="ALIMENTAÇÃO">🍴 ALIMENTAÇÃO</option>
                     <option value="CARRO">🚗 CARRO</option>
                     <option value="IGREJA">⛪ IGREJA</option>
+                    <option value="EDUCAÇÃO">📚 EDUCAÇÃO</option>
+                    <option value="FÉRIAS">🌴 FÉRIAS</option>
                     <option value="PET">🐾 PET</option>
+                    <option value="MANUTENÇÃO">🛠️ MANUTENÇÃO</option>
+                    <option value="SAÚDE">💊 SAÚDE</option>
+                    <option value="FINANÇAS">💰 FINANÇAS</option>
+                    <option value="LAZER">🍕 LAZER</option>
                 </select>
                 <input type="date" id="inputData" style="flex:1;">
             </div>
@@ -177,7 +183,7 @@
     function renderizar() {
         const lista = document.getElementById('listaTarefas');
         lista.innerHTML = "";
-        const cats = ["Tudo", "GERAL", "FAXINA", "ALIMENTAÇÃO", "CARRO", "IGREJA", "PET"];
+        const cats = ["Tudo", "GERAL", "FAXINA", "ALIMENTAÇÃO", "CARRO", "IGREJA", "EDUCAÇÃO", "FÉRIAS", "PET", "MANUTENÇÃO", "SAÚDE", "FINANÇAS", "LAZER"];
         document.getElementById('filtrosContainer').innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
 
         tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
@@ -219,33 +225,19 @@
     }
 
     // LÓGICA DO SWIPE
-    let touchStartX = 0;
-    let currentElement = null;
-
-    window.handleTouchStart = (e) => {
-        touchStartX = e.touches[0].clientX;
-        currentElement = e.currentTarget;
-        currentElement.style.transition = 'none';
+    let touchStartX = 0, currentElement = null;
+    window.handleTouchStart = (e) => { touchStartX = e.touches[0].clientX; currentElement = e.currentTarget; currentElement.style.transition = 'none'; };
+    window.handleTouchMove = (e) => { 
+        const diff = e.touches[0].clientX - touchStartX;
+        if (diff < 0 && diff > -100) currentElement.style.transform = `translateX(${diff}px)`;
     };
-
-    window.handleTouchMove = (e) => {
-        const x = e.touches[0].clientX;
-        const diff = x - touchStartX;
-        if (diff < 0 && diff > -100) {
-            currentElement.style.transform = `translateX(${diff}px)`;
-        }
-    };
-
     window.handleTouchEnd = (e) => {
-        const x = e.changedTouches[0].clientX;
-        const diff = x - touchStartX;
+        const diff = e.changedTouches[0].clientX - touchStartX;
         currentElement.style.transition = 'transform 0.3s ease';
         if (diff < -70) {
             currentElement.style.transform = `translateX(-100%)`;
             setTimeout(() => window.eliminar(currentElement.dataset.id), 300);
-        } else {
-            currentElement.style.transform = `translateX(0)`;
-        }
+        } else currentElement.style.transform = `translateX(0)`;
     };
 
     window.mudarFiltro = c => { categoriaAtiva = c; renderizar(); };
