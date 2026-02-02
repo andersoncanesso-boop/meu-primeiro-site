@@ -3,35 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Reset</title>
+    <title>Gestão Familiar - Dashboard Pro</title>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --danger: #ef4444; --success: #22c55e; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; --danger: #ef4444; --success: #22c55e; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; }
         .container { width: 100%; max-width: 500px; }
-        .dashboard { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .stat-box { text-align: center; padding: 10px; background: var(--bg); border-radius: 12px; border: 1px solid var(--border); }
-        .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--primary); display: block; }
-        .stat-label { font-size: 0.65rem; font-weight: bold; color: #65676b; text-transform: uppercase; }
-        .tarefa-card { background: var(--card); border-radius: 12px; padding: 15px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .info-area { flex: 1; margin-left: 10px; }
-        .tarefa-titulo { font-size: 0.95rem; font-weight: 600; display: block; }
-        .btn-reset { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
-        .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        input, select, #btnSalvar { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; }
-        #btnSalvar { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
         .hidden { display: none; }
+
+        /* Dashboard */
+        .dashboard { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .stat-box { text-align: center; padding: 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); }
+        .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--primary); display: block; }
+        .stat-label { font-size: 0.6rem; font-weight: bold; color: var(--secondary); text-transform: uppercase; }
+
+        /* Form */
+        .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input, select, #btnSalvar { width: 100%; padding: 10px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; font-size: 0.9rem; }
+        #btnSalvar { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 8px; }
+        
+        /* Lista e Cards */
+        .tarefa-card { background: var(--card); border-radius: 12px; padding: 14px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .check-area input { transform: scale(1.3); margin-right: 12px; cursor: pointer; }
+        .info-area { flex: 1; }
+        .cat-label { font-size: 0.6rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+        .tarefa-titulo { font-size: 0.9rem; font-weight: 600; display: block; }
+        .tarefa-data { font-size: 0.7rem; color: var(--secondary); }
+        .acoes-area { display: flex; gap: 10px; }
+        .btn-acao { background: none; border: none; cursor: pointer; font-size: 1rem; opacity: 0.7; }
+        .concluida { opacity: 0.5; background: #fafafa; }
+        .concluida .tarefa-titulo { text-decoration: line-through; }
+        
+        .filtros { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; scrollbar-width: none; }
+        .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; white-space: nowrap; font-size: 0.75rem; cursor: pointer; }
+        .filtro-btn.active { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="telaLogin">
-        <button id="btnLogin" style="width:100%; padding:15px; border-radius:12px; cursor:pointer; font-weight:bold;">Entrar com Google</button>
+        <h1 style="text-align:center; color: var(--primary);">🏠 Gestão Familiar</h1>
+        <button id="btnLogin" style="width:100%; padding:15px; border-radius:12px; cursor:pointer;">Entrar com Google</button>
     </div>
 
     <div id="telaApp" class="hidden">
-        <button class="btn-reset" onclick="window.resetTotal()">🧨 APAGAR TUDO E RECOMEÇAR</button>
-
         <div class="dashboard">
             <div class="stat-box"><span class="stat-label">Diário</span><span class="stat-val" id="valDia">0%</span></div>
             <div class="stat-box"><span class="stat-label">Mensal</span><span class="stat-val" id="valMes">0%</span></div>
@@ -40,23 +55,39 @@
         </div>
 
         <div class="form-card">
-            <input type="text" id="inputTarefa" placeholder="Nova tarefa...">
-            <select id="selectRecorrencia">
-                <option value="nenhuma">📍 Única</option>
-                <option value="diaria">🔄 Diária</option>
-                <option value="mensal">📅 Mensal</option>
-            </select>
+            <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
+            <div style="display:flex; gap:5px;">
+                <select id="selectCategoria" style="flex:1;">
+                    <option value="GERAL">📂 GERAL</option>
+                    <option value="FAXINA">🧹 FAXINA</option>
+                    <option value="ALIMENTAÇÃO">🍴 ALIMENTAÇÃO</option>
+                    <option value="CARRO">🚗 CARRO</option>
+                    <option value="IGREJA">⛪ IGREJA</option>
+                    <option value="PET">🐾 PET</option>
+                    <option value="SAÚDE">💊 SAÚDE</option>
+                    <option value="FINANÇAS">💰 FINANÇAS</option>
+                    <option value="EDUCAÇÃO">📚 EDUCAÇÃO</option>
+                </select>
+                <select id="selectRecorrencia" style="flex:1;">
+                    <option value="nenhuma">📍 Única</option>
+                    <option value="diaria">🔄 Diária</option>
+                    <option value="mensal">📅 Mensal</option>
+                    <option value="semestral">🗓️ Semestral</option>
+                    <option value="anual">🎆 Anual</option>
+                </select>
+            </div>
             <input type="date" id="inputData">
-            <button id="btnSalvar">Salvar</button>
+            <button id="btnSalvar">Salvar Tarefa</button>
         </div>
 
+        <div class="filtros" id="filtrosContainer"></div>
         <div id="listaTarefas"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, signInWithPopup, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = { apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc", authDomain: "gestao-familiar-ac7d6.firebaseapp.com", projectId: "gestao-familiar-ac7d6", storageBucket: "gestao-familiar-ac7d6.firebasestorage.app", messagingSenderId: "1063581141078", appId: "1:1063581141078:web:af2fc67412dbc6fee313f7" };
@@ -65,7 +96,7 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    let tarefasGlobais = [];
+    let tarefasGlobais = [], categoriaAtiva = "Tudo", idEdicao = null;
 
     onAuthStateChanged(auth, user => {
         if (user) {
@@ -83,17 +114,6 @@
         });
     }
 
-    // A FUNÇÃO QUE VAI LIMPAR O SEU BANCO DE DADOS
-    window.resetTotal = async () => {
-        if (confirm("ATENÇÃO: Isso vai apagar TODAS as tarefas da tela agora. Confirma?")) {
-            const batch = writeBatch(db);
-            const snapshot = await getDocs(collection(db, "tarefas"));
-            snapshot.forEach(d => batch.delete(d.ref));
-            await batch.commit();
-            alert("Banco de dados limpo! Agora pode criar as tarefas novas.");
-        }
-    };
-
     window.toggleTarefa = async (id, status) => {
         const t = tarefasGlobais.find(x => x.id === id);
         await updateDoc(doc(db, "tarefas", id), { concluida: status });
@@ -101,7 +121,9 @@
         if (status && t.recorrencia && t.recorrencia !== "nenhuma") {
             const novaData = calcularProximaData(t.dataLimite, t.recorrencia);
             await addDoc(collection(db, "tarefas"), {
-                ...t, id: null, concluida: false, dataLimite: novaData, criadoEm: new Date()
+                descricao: t.descricao, categoria: t.categoria, recorrencia: t.recorrencia,
+                dataLimite: novaData, concluida: false, criadoEm: new Date(), 
+                autorFoto: t.autorFoto, autorNome: t.autorNome
             });
         }
     };
@@ -111,20 +133,40 @@
         let d = new Date(p[0], p[1]-1, p[2]);
         if (tipo === "diaria") d.setDate(d.getDate() + 1);
         else if (tipo === "mensal") d.setMonth(d.getMonth() + 1);
+        else if (tipo === "semestral") d.setMonth(d.getMonth() + 6);
+        else if (tipo === "anual") d.setFullYear(d.getFullYear() + 1);
         return d.toISOString().split('T')[0];
     }
+
+    window.prepararEdicao = (id, d, c, dt, r) => {
+        idEdicao = id;
+        document.getElementById('inputTarefa').value = d;
+        document.getElementById('selectCategoria').value = c;
+        document.getElementById('inputData').value = dt;
+        document.getElementById('selectRecorrencia').value = r;
+        document.getElementById('btnSalvar').innerText = "Atualizar Tarefa";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     document.getElementById('btnSalvar').onclick = async () => {
         const desc = document.getElementById('inputTarefa').value;
         if (!desc) return;
-        await addDoc(collection(db, "tarefas"), {
+        const dados = {
             descricao: desc,
+            categoria: document.getElementById('selectCategoria').value,
             recorrencia: document.getElementById('selectRecorrencia').value,
             dataLimite: document.getElementById('inputData').value,
-            concluida: false,
-            criadoEm: new Date(),
-            autorFoto: auth.currentUser.photoURL
-        });
+            autorFoto: auth.currentUser.photoURL,
+            autorNome: auth.currentUser.displayName.split(' ')[0]
+        };
+
+        if (idEdicao) {
+            await updateDoc(doc(db, "tarefas", idEdicao), dados);
+            idEdicao = null;
+            document.getElementById('btnSalvar').innerText = "Salvar Tarefa";
+        } else {
+            await addDoc(collection(db, "tarefas"), { ...dados, concluida: false, criadoEm: new Date() });
+        }
         document.getElementById('inputTarefa').value = "";
     };
 
@@ -132,6 +174,7 @@
         const lista = document.getElementById('listaTarefas');
         lista.innerHTML = "";
         const hoje = new Date().toISOString().split('T')[0];
+        const mesAt = hoje.substring(0, 7);
 
         const calc = (f) => {
             const t = tarefasGlobais.filter(f);
@@ -139,23 +182,33 @@
         };
 
         document.getElementById('valDia').innerText = calc(t => t.dataLimite === hoje) + "%";
-        document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(hoje.substring(0,7))) + "%";
+        document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(mesAt)) + "%";
+        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semestral') + "%";
+        document.getElementById('valAnu').innerText = calc(t => t.recorrencia === 'anual') + "%";
 
-        tarefasGlobais.forEach(t => {
+        const cats = ["Tudo", "GERAL", "FAXINA", "ALIMENTAÇÃO", "CARRO", "IGREJA", "PET", "SAÚDE", "FINANÇAS"];
+        document.getElementById('filtrosContainer').innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
+
+        tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
             const card = document.createElement('div');
             card.className = `tarefa-card ${t.concluida ? 'concluida' : ''}`;
             card.innerHTML = `
-                <input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)">
+                <div class="check-area"><input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)"></div>
                 <div class="info-area">
-                    <span class="tarefa-titulo">${t.descricao}</span>
-                    <small>🗓️ ${t.dataLimite}</small>
+                    <span class="cat-label">${t.categoria}</span>
+                    <span class="tarefa-titulo">${t.descricao} ${t.recorrencia !== 'nenhuma' ? '🔄' : ''}</span>
+                    <span class="tarefa-data">🗓️ ${t.dataLimite.split('-').reverse().join('/')}</span>
                 </div>
-                <button onclick="window.eliminar('${t.id}')">🗑️</button>`;
+                <div class="acoes-area">
+                    <button class="btn-acao" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')">✏️</button>
+                    <button class="btn-acao" onclick="window.eliminar('${t.id}')">🗑️</button>
+                </div>`;
             lista.appendChild(card);
         });
     }
 
-    window.eliminar = async (id) => { await deleteDoc(doc(db, "tarefas", id)); };
+    window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
+    window.mudarFiltro = c => { categoriaAtiva = c; renderizar(); };
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
 </script>
 </body>
