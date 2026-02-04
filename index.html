@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Full Dashboard</title>
+    <title>Gestão Familiar - Home & Shop</title>
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; --danger: #ef4444; }
         body.dark-mode { --bg: #111111; --card: #1e1e1e; --text: #f5f5f5; --border: #333333; --primary: #60a5fa; }
@@ -11,15 +11,16 @@
         .container { width: 92%; max-width: 480px; }
         .hidden { display: none !important; }
         
+        /* Menu Superior */
         .nav-top { position: fixed; top: 0; width: 100%; max-width: 500px; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 2px solid var(--border); z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-btn { background: none; border: none; font-weight: bold; color: var(--secondary); cursor: pointer; padding: 10px; font-size: 0.85rem; border-bottom: 3px solid transparent; }
         .nav-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
 
-        /* Dashboard com 4 itens */
+        /* Dashboard Completo */
         .dashboard { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .stat-box { text-align: center; padding: 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); }
         .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--primary); display: block; }
-        .stat-label { font-size: 0.55rem; font-weight: bold; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-label { font-size: 0.55rem; font-weight: bold; color: var(--secondary); text-transform: uppercase; }
         
         .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         input, select, #btnSalvar { width: 100%; padding: 12px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 0.9rem; }
@@ -55,15 +56,14 @@
     </div>
 
     <div id="telaApp" class="hidden">
-        <div id="secaoDashboard">
+        <div id="secaoCabecalho">
             <div class="dashboard">
                 <div class="stat-box"><span class="stat-label">Hoje</span><span class="stat-val" id="valDia">0%</span></div>
                 <div class="stat-box"><span class="stat-label">Mês</span><span class="stat-val" id="valMes">0%</span></div>
                 <div class="stat-box"><span class="stat-label">Semestre</span><span class="stat-val" id="valSem">0%</span></div>
                 <div class="stat-box"><span class="stat-label">Ano</span><span class="stat-val" id="valAnu">0%</span></div>
             </div>
-
-            <div class="form-card" id="formCadastro">
+            <div class="form-card">
                 <input type="text" id="inputTarefa" placeholder="O que faremos hoje?">
                 <div style="display:flex; gap:5px;">
                     <select id="selectCategoria" style="flex:1;">
@@ -71,7 +71,7 @@
                         <option value="ALIMENTAÇÃO">🧑‍🍳 ALIMENTAÇÃO</option>
                         <option value="MERCADO">🛒 MERCADO</option>
                         <option value="CARRO">🚗 CARRO</option>
-                        <option value="IGREJA">⛪ IGREJA/PASCOM</option>
+                        <option value="IGREJA">⛪ IGREJA</option>
                         <option value="CASA">🏠 CASA</option>
                         <option value="PET">🐾 PET</option>
                         <option value="SAÚDE">💊 SAÚDE</option>
@@ -138,7 +138,7 @@
         abaAtiva = aba;
         document.getElementById('btnAbaTarefas').classList.toggle('active', aba === 'tarefas');
         document.getElementById('btnAbaCompras').classList.toggle('active', aba === 'compras');
-        document.getElementById('secaoDashboard').classList.toggle('hidden', aba === 'compras');
+        document.getElementById('secaoCabecalho').classList.toggle('hidden', aba === 'compras');
         renderizar();
     };
 
@@ -161,7 +161,20 @@
         }
     };
 
-    window.eliminar = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
+    // FUNÇÃO DE ELIMINAÇÃO FORÇADA
+    window.eliminar = async id => {
+        if(confirm("Deseja apagar este item permanentemente?")) {
+            try {
+                await deleteDoc(doc(db, "tarefas", id));
+                // Remove localmente antes mesmo do banco responder (Limpeza de Cache)
+                tarefasGlobais = tarefasGlobais.filter(t => t.id !== id);
+                renderizar();
+            } catch (e) {
+                console.error("Erro ao apagar:", e);
+                alert("Erro ao apagar. Pode ser limite diário do Google. Tente amanhã!");
+            }
+        }
+    };
     
     window.prepararEdicao = (id, desc, cat, data, rec) => {
         idEdicao = id;
@@ -220,8 +233,8 @@
         const mesStr = hojeStr.substring(0,7);
         const anoStr = hojeStr.substring(0,4);
 
-        const calc = (f) => {
-            const t = tarefasGlobais.filter(f);
+        const calc = (filtro) => {
+            const t = tarefasGlobais.filter(filtro);
             return t.length > 0 ? Math.round((t.filter(x => x.concluida).length / t.length) * 100) : 0;
         };
 
