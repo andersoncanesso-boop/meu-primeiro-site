@@ -9,6 +9,7 @@
             --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; 
             --primary: #2563eb; --secondary: #65676b; --danger: #ef4444; --success: #22c55e; 
         }
+        /* Definições do Modo Escuro */
         body.dark-mode { 
             --bg: #18191a; --card: #242526; --text: #e4e6eb; --border: #3e4042; 
             --primary: #4589ff; --secondary: #b0b3b8; 
@@ -18,15 +19,18 @@
         .container { width: 100%; max-width: 500px; }
         .hidden { display: none; }
 
+        /* Dashboard */
         .dashboard { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .stat-box { text-align: center; padding: 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); }
         .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--primary); display: block; }
         .stat-label { font-size: 0.6rem; font-weight: bold; color: var(--secondary); text-transform: uppercase; }
 
+        /* Formulário */
         .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid var(--border); }
         input, select, #btnSalvar { width: 100%; padding: 12px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; font-size: 0.9rem; background: var(--card); color: var(--text); }
         #btnSalvar { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 8px; }
         
+        /* Lista e Swipe */
         .swipe-container { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 10px; touch-action: pan-y; }
         .swipe-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 100%; background: var(--danger); display: flex; align-items: center; justify-content: flex-end; padding-right: 20px; color: white; font-weight: bold; z-index: 1; border-radius: 12px; }
         .tarefa-card { background: var(--card); border-radius: 12px; padding: 14px; display: flex; align-items: center; border: 1px solid var(--border); position: relative; z-index: 2; transition: transform 0.2s ease-out; }
@@ -45,6 +49,7 @@
         .filtro-btn { background: var(--card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; white-space: nowrap; font-size: 0.75rem; cursor: pointer; color: var(--text); }
         .filtro-btn.active { background: var(--primary); color: white; }
 
+        /* Botão Dark Mode Flutuante */
         .dark-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -113,9 +118,12 @@
 
     let tarefasGlobais = [], categoriaAtiva = "Tudo", idEdicao = null;
 
+    // LÓGICA DARK MODE
     const btnDark = document.getElementById('btnDarkMode');
     const body = document.body;
+    
     if (localStorage.getItem('theme') === 'dark') body.classList.add('dark-mode');
+
     btnDark.onclick = () => {
         body.classList.toggle('dark-mode');
         localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
@@ -230,6 +238,7 @@
         });
     }
 
+    // SWIPE LOGIC
     let sX = 0, curr = null;
     window.hS = e => { sX = e.touches[0].clientX; curr = e.currentTarget; curr.style.transition = 'none'; };
     window.hM = e => { let d = e.touches[0].clientX - sX; if(d < 0 && d > -100) curr.style.transform = `translateX(${d}px)`; };
