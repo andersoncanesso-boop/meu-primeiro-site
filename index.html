@@ -3,31 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Home & Shop</title>
+    <title>Gestão Familiar - Full</title>
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; --danger: #ef4444; }
         body.dark-mode { --bg: #111111; --card: #1e1e1e; --text: #f5f5f5; --border: #333333; --primary: #60a5fa; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 70px; display: flex; justify-content: center; transition: 0.3s; }
-        .container { width: 92%; max-width: 450px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 75px; display: flex; justify-content: center; transition: 0.3s; }
+        .container { width: 92%; max-width: 480px; }
         .hidden { display: none !important; }
+        
+        /* Menu Superior */
         .nav-top { position: fixed; top: 0; width: 100%; max-width: 500px; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 2px solid var(--border); z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-btn { background: none; border: none; font-weight: bold; color: var(--secondary); cursor: pointer; padding: 10px; font-size: 0.85rem; border-bottom: 3px solid transparent; }
         .nav-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
-        .dashboard { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border: 1px solid var(--border); }
-        .stat-box { text-align: center; padding: 8px; border-radius: 12px; background: var(--bg); }
+
+        .dashboard { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border: 1px solid var(--border); }
+        .stat-box { text-align: center; padding: 8px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
         .stat-val { font-size: 1.1rem; font-weight: 800; color: var(--primary); display: block; }
-        .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; border: 1px solid var(--border); }
-        input, select, #btnSalvar { width: 100%; padding: 12px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; }
-        #btnSalvar { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; }
-        .tarefa-card { background: var(--card); border-radius: 12px; padding: 12px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 8px; }
+        
+        .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        input, select, #btnSalvar { width: 100%; padding: 12px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 0.9rem; }
+        #btnSalvar { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 8px; }
+
+        .tarefa-card { background: var(--card); border-radius: 12px; padding: 12px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .check-area input { transform: scale(1.3); margin-right: 12px; }
         .info-area { flex: 1; }
         .cat-label { font-size: 0.6rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
         .tarefa-titulo { font-size: 0.95rem; font-weight: 600; display: block; }
-        .acoes-area { display: flex; gap: 10px; }
-        .btn-acao { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
-        .concluida { opacity: 0.4; }
+        .acoes-area { display: flex; gap: 8px; }
+        .btn-acao { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 4px; }
+        .concluida { opacity: 0.5; }
         .concluida .tarefa-titulo { text-decoration: line-through; }
+        
         .dark-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     </style>
 </head>
@@ -43,28 +49,36 @@
 <div class="container">
     <div id="telaLogin" style="text-align:center; padding-top: 50px;">
         <h1>🏠 Gestão Familiar</h1>
-        <p>Acesse com seu e-mail cadastrado.</p>
-        <button id="btnLogin" style="width:100%; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer; background:#fff; border:1px solid #ccc;">Entrar com Google</button>
+        <button id="btnLogin" style="width:100%; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer; background:var(--card); border:1px solid var(--border); color:var(--text);">Entrar com Google</button>
     </div>
 
     <div id="telaApp" class="hidden">
         <div id="secaoCabecalho">
             <div class="dashboard">
-                <div class="stat-box"><span style="font-size:0.6rem;">DIÁRIO</span><span class="stat-val" id="valDia">0%</span></div>
-                <div class="stat-box"><span style="font-size:0.6rem;">MENSAL</span><span class="stat-val" id="valMes">0%</span></div>
+                <div class="stat-box"><span style="font-size:0.6rem; font-weight:bold;">HOJE</span><span class="stat-val" id="valDia">0%</span></div>
+                <div class="stat-box"><span style="font-size:0.6rem; font-weight:bold;">MÊS</span><span class="stat-val" id="valMes">0%</span></div>
             </div>
             <div class="form-card">
-                <input type="text" id="inputTarefa" placeholder="O que faremos?">
+                <input type="text" id="inputTarefa" placeholder="O que faremos hoje?">
                 <div style="display:flex; gap:5px;">
-                    <select id="selectCategoria" style="flex:1;">
+                    <select id="selectCategoria" style="flex:1.2;">
                         <option value="GERAL">📂 GERAL</option>
+                        <option value="ALIMENTAÇÃO">🧑‍🍳 ALIMENTAÇÃO</option>
                         <option value="MERCADO">🛒 MERCADO</option>
-                        <option value="IGREJA">⛪ IGREJA</option>
-                        <option value="CASA">🏠 CASA</option>
+                        <option value="CARRO">🚗 CARRO</option>
+                        <option value="IGREJA">⛪ IGREJA/PASCOM</option>
+                        <option value="EDUCAÇÃO">📚 EDUCAÇÃO</option>
+                        <option value="FAXINA">🧹 FAXINA</option>
+                        <option value="PET">🐾 PET</option>
+                        <option value="MANUTENÇÃO">🛠️ MANUTENÇÃO</option>
+                        <option value="SAÚDE">💊 SAÚDE</option>
+                        <option value="FINANÇAS">💰 FINANÇAS</option>
+                        <option value="LAZER">🍕 LAZER</option>
+                        <option value="FÉRIAS">🌴 FÉRIAS</option>
                     </select>
                     <input type="date" id="inputData" style="flex:1;">
                 </div>
-                <button id="btnSalvar">Salvar Item</button>
+                <button id="btnSalvar">Salvar na Lista</button>
             </div>
         </div>
         <div id="listaTarefas"></div>
@@ -92,7 +106,6 @@
 
     let tarefasGlobais = [], abaAtiva = "tarefas", idEdicao = null;
 
-    // Dark Mode
     if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
     document.getElementById('btnDarkMode').onclick = () => {
         document.body.classList.toggle('dark-mode');
@@ -110,7 +123,7 @@
                 tarefasGlobais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderizar();
             }, error => {
-                alert("Acesso Negado: Seu e-mail não está na lista permitida.");
+                alert("Acesso Negado! Verifique se seu e-mail está na lista de permissão.");
                 auth.signOut();
                 location.reload();
             });
@@ -126,14 +139,14 @@
     };
 
     window.toggleTarefa = async (id, status) => { await updateDoc(doc(db, "tarefas", id), { concluida: status }); };
-    window.eliminar = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
+    window.eliminar = async id => { if(confirm("Apagar definitivamente?")) await deleteDoc(doc(db, "tarefas", id)); };
     
     window.prepararEdicao = (id, desc, cat, data) => {
         idEdicao = id;
         document.getElementById('inputTarefa').value = desc;
         document.getElementById('selectCategoria').value = cat;
         document.getElementById('inputData').value = data;
-        document.getElementById('btnSalvar').innerText = "Atualizar";
+        document.getElementById('btnSalvar').innerText = "Atualizar Item";
         window.scrollTo(0,0);
     };
 
@@ -146,7 +159,7 @@
         if (idEdicao) {
             await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc, categoria: cat, dataLimite: data });
             idEdicao = null;
-            document.getElementById('btnSalvar').innerText = "Salvar Item";
+            document.getElementById('btnSalvar').innerText = "Salvar na Lista";
         } else {
             await addDoc(collection(db, "tarefas"), {
                 descricao: desc, categoria: cat, dataLimite: data,
@@ -171,7 +184,7 @@
                     <span class="tarefa-titulo">${t.descricao}</span>
                 </div>
                 <div class="acoes-area">
-                    <button class="btn-acao" onclick="window.prepararEdicao('${t.id}', '${t.descricao}', '${t.categoria}', '${t.dataLimite}')">✏️</button>
+                    <button class="btn-acao" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}')">✏️</button>
                     <button class="btn-acao" onclick="window.eliminar('${t.id}')">🗑️</button>
                 </div>`;
             lista.appendChild(card);
@@ -189,7 +202,7 @@
     document.getElementById('btnLogin').onclick = () => {
         setPersistence(auth, browserLocalPersistence).then(() => {
             return signInWithPopup(auth, provider);
-        }).catch(e => alert("Erro no Login: " + e.message));
+        }).catch(e => alert("Erro: " + e.message));
     };
 </script>
 </body>
