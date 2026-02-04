@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Home & Shop</title>
+    <title>Gestão Familiar - Full Dashboard</title>
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; --danger: #ef4444; }
         body.dark-mode { --bg: #111111; --card: #1e1e1e; --text: #f5f5f5; --border: #333333; --primary: #60a5fa; }
@@ -11,16 +11,15 @@
         .container { width: 92%; max-width: 480px; }
         .hidden { display: none !important; }
         
-        /* Menu Superior */
         .nav-top { position: fixed; top: 0; width: 100%; max-width: 500px; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 2px solid var(--border); z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .nav-btn { background: none; border: none; font-weight: bold; color: var(--secondary); cursor: pointer; padding: 10px; font-size: 0.85rem; border-bottom: 3px solid transparent; }
         .nav-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
 
-        /* Dashboard Restaurado */
+        /* Dashboard com 4 itens */
         .dashboard { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .stat-box { text-align: center; padding: 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); }
-        .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--primary); display: block; }
-        .stat-label { font-size: 0.65rem; font-weight: bold; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-box { text-align: center; padding: 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); }
+        .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--primary); display: block; }
+        .stat-label { font-size: 0.55rem; font-weight: bold; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.5px; }
         
         .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         input, select, #btnSalvar { width: 100%; padding: 12px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 0.9rem; }
@@ -31,7 +30,7 @@
         .info-area { flex: 1; }
         .cat-label { font-size: 0.6rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
         .tarefa-titulo { font-size: 0.95rem; font-weight: 600; display: block; }
-        .tarefa-meta { font-size: 0.7rem; color: var(--secondary); display: block; margin-top: 2px; }
+        .tarefa-meta { font-size: 0.7rem; color: var(--secondary); }
         .acoes-area { display: flex; gap: 8px; }
         .btn-acao { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 4px; }
         .concluida { opacity: 0.5; }
@@ -58,14 +57,10 @@
     <div id="telaApp" class="hidden">
         <div id="secaoDashboard">
             <div class="dashboard">
-                <div class="stat-box">
-                    <span class="stat-label">Progresso Hoje</span>
-                    <span class="stat-val" id="valDia">0%</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Mês Corrente</span>
-                    <span class="stat-val" id="valMes">0%</span>
-                </div>
+                <div class="stat-box"><span class="stat-label">Hoje</span><span class="stat-val" id="valDia">0%</span></div>
+                <div class="stat-box"><span class="stat-label">Mês</span><span class="stat-val" id="valMes">0%</span></div>
+                <div class="stat-box"><span class="stat-label">Semestre</span><span class="stat-val" id="valSem">0%</span></div>
+                <div class="stat-box"><span class="stat-label">Ano</span><span class="stat-val" id="valAnu">0%</span></div>
             </div>
 
             <div class="form-card" id="formCadastro">
@@ -143,7 +138,6 @@
         abaAtiva = aba;
         document.getElementById('btnAbaTarefas').classList.toggle('active', aba === 'tarefas');
         document.getElementById('btnAbaCompras').classList.toggle('active', aba === 'compras');
-        // Oculta dashboard e form na aba de compras para foco total na lista
         document.getElementById('secaoDashboard').classList.toggle('hidden', aba === 'compras');
         renderizar();
     };
@@ -152,11 +146,9 @@
         const t = tarefasGlobais.find(x => x.id === id);
         await updateDoc(doc(db, "tarefas", id), { concluida: status });
         
-        // Se concluiu e tem recorrência, gera a próxima
         if (status && t.recorrencia && t.recorrencia !== "nenhuma") {
             let p = t.dataLimite.split("-");
             let d = new Date(p[0], p[1]-1, p[2]);
-            
             if (t.recorrencia === "diaria") d.setDate(d.getDate() + 1);
             else if (t.recorrencia === "semanal") d.setDate(d.getDate() + 7);
             else if (t.recorrencia === "semestral") d.setMonth(d.getMonth() + 6);
@@ -169,7 +161,7 @@
         }
     };
 
-    window.eliminar = async id => { if(confirm("Remover este item?")) await deleteDoc(doc(db, "tarefas", id)); };
+    window.eliminar = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
     
     window.prepararEdicao = (id, desc, cat, data, rec) => {
         idEdicao = id;
@@ -177,7 +169,7 @@
         document.getElementById('selectCategoria').value = cat;
         document.getElementById('inputData').value = data;
         document.getElementById('selectRecorrencia').value = rec || "nenhuma";
-        document.getElementById('btnSalvar').innerText = "Atualizar Item";
+        document.getElementById('btnSalvar').innerText = "Atualizar";
         window.scrollTo(0,0);
     };
 
@@ -214,7 +206,7 @@
                 <div class="info-area">
                     <span class="cat-label">${t.categoria} ${t.recorrencia !== 'nenhuma' ? '🔄' : ''}</span>
                     <span class="tarefa-titulo">${t.descricao}</span>
-                    <span class="tarefa-meta">🗓️ Vence em: ${t.dataLimite.split('-').reverse().join('/')}</span>
+                    <span class="tarefa-meta">🗓️ ${t.dataLimite.split('-').reverse().join('/')}</span>
                 </div>
                 <div class="acoes-area">
                     <button class="btn-acao" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')">✏️</button>
@@ -223,26 +215,26 @@
             lista.appendChild(card);
         });
         
-        // Lógica do Dashboard (Respeitando datas)
         const hojeObj = new Date();
         const hojeStr = hojeObj.toISOString().split('T')[0];
         const mesStr = hojeStr.substring(0,7);
+        const anoStr = hojeStr.substring(0,4);
 
-        const calcProgresso = (filtro) => {
-            const base = tarefasGlobais.filter(filtro);
-            if (base.length === 0) return 0;
-            const feitas = base.filter(t => t.concluida).length;
-            return Math.round((feitas / base.length) * 100);
+        const calc = (f) => {
+            const t = tarefasGlobais.filter(f);
+            return t.length > 0 ? Math.round((t.filter(x => x.concluida).length / t.length) * 100) : 0;
         };
 
-        document.getElementById('valDia').innerText = calcProgresso(t => t.dataLimite === hojeStr) + "%";
-        document.getElementById('valMes').innerText = calcProgresso(t => t.dataLimite.startsWith(mesStr)) + "%";
+        document.getElementById('valDia').innerText = calc(t => t.dataLimite === hojeStr) + "%";
+        document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(mesStr)) + "%";
+        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semestral') + "%";
+        document.getElementById('valAnu').innerText = calc(t => t.recorrencia === 'anual' || t.dataLimite.startsWith(anoStr)) + "%";
     }
 
     document.getElementById('btnLogin').onclick = () => {
         setPersistence(auth, browserLocalPersistence).then(() => {
             return signInWithPopup(auth, provider);
-        }).catch(e => alert("Erro: " + e.message));
+        });
     };
 </script>
 </body>
