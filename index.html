@@ -32,7 +32,7 @@
         .cat-label { font-size: 0.6rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
         .tarefa-titulo { font-size: 0.9rem; font-weight: 600; display: block; }
         .tarefa-data { font-size: 0.7rem; color: var(--secondary); }
-        .acoes-area { display: flex; gap: 10px; }
+        .acoes-area { display: flex; gap: 10px; z-index: 10; } /* Z-index para garantir o clique */
         .btn-acao { background: none; border: none; cursor: pointer; font-size: 1rem; opacity: 0.7; }
         .concluida { opacity: 0.5; background: #fafafa; }
         .concluida .tarefa-titulo { text-decoration: line-through; }
@@ -193,52 +193,4 @@
         document.getElementById('valAnu').innerText = calc(t => t.recorrencia === 'anual') + "%";
 
         const cats = ["Tudo", "GERAL", "ALIMENTAÇÃO", "MERCADO", "CARRO", "IGREJA", "EDUCAÇÃO", "FÉRIAS", "FAXINA", "PET", "MANUTENÇÃO", "SAÚDE", "FINANÇAS", "LAZER"];
-        document.getElementById('filtrosContainer').innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>`).join('');
-
-        tarefasGlobais.filter(t => categoriaAtiva === "Tudo" || t.categoria === categoriaAtiva).forEach(t => {
-            const container = document.createElement('div');
-            container.className = 'swipe-container';
-            container.innerHTML = `
-                <div class="swipe-bg"><span>Apagar 🗑️</span></div>
-                <div class="tarefa-card ${t.concluida ? 'concluida' : ''}" 
-                     data-id="${t.id}"
-                     ontouchstart="handleTouchStart(event)" 
-                     ontouchmove="handleTouchMove(event)" 
-                     ontouchend="handleTouchEnd(event)">
-                    <div class="check-area"><input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)"></div>
-                    <div class="info-area">
-                        <span class="cat-label">${t.categoria} ${t.recorrencia !== 'nenhuma' ? '🔄' : ''}</span>
-                        <span class="tarefa-titulo">${t.descricao}</span>
-                        <span class="tarefa-data">🗓️ ${t.dataLimite.split('-').reverse().join('/')}</span>
-                    </div>
-                    <div class="acoes-area">
-                        <button class="btn-acao" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')">✏️</button>
-                        <button class="btn-acao" onclick="window.eliminar('${t.id}')">🗑️</button>
-                    </div>
-                </div>`;
-            lista.appendChild(container);
-        });
-    }
-
-    // LÓGICA DO SWIPE (RESTABELECIDA)
-    let touchStartX = 0, currentElement = null;
-    window.handleTouchStart = (e) => { touchStartX = e.touches[0].clientX; currentElement = e.currentTarget; currentElement.style.transition = 'none'; };
-    window.handleTouchMove = (e) => { 
-        const diff = e.touches[0].clientX - touchStartX;
-        if (diff < 0 && diff > -100) currentElement.style.transform = `translateX(${diff}px)`;
-    };
-    window.handleTouchEnd = (e) => {
-        const diff = e.changedTouches[0].clientX - touchStartX;
-        currentElement.style.transition = 'transform 0.3s ease';
-        if (diff < -70) {
-            currentElement.style.transform = `translateX(-100%)`;
-            setTimeout(() => window.eliminar(currentElement.dataset.id), 300);
-        } else currentElement.style.transform = `translateX(0)`;
-    };
-
-    window.eliminar = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
-    window.mudarFiltro = c => { categoriaAtiva = c; renderizar(); };
-    document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
-</script>
-</body>
-</html>
+        document.getElementById('filtrosContainer').innerHTML = cats.map(c => `<button class="filtro-btn ${categoriaAtiva === c ? 'active' : ''}" onclick="window.mudarFiltro('${c}')">${c}</button>
