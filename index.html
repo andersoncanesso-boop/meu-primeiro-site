@@ -3,79 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - RESET</title>
+    <title>Gestão Familiar - Pro</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 450px; text-align: center; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        button { width: 100%; padding: 15px; margin-top: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-login { background: #2563eb; color: white; }
-        .item { background: #fff; border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
-        .btn-del { background: #ef4444; color: white; width: auto; padding: 5px 10px; margin: 0; }
+        :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; --success: #22c55e; }
+        body.dark-mode { --bg: #111111; --card: #1e1e1e; --text: #f5f5f5; --border: #333333; --primary: #60a5fa; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 75px; display: flex; justify-content: center; transition: 0.3s; }
+        .container { width: 92%; max-width: 480px; }
+        .hidden { display: none !important; }
+        
+        .nav-top { position: fixed; top: 0; width: 100%; max-width: 500px; background: var(--card); display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 2px solid var(--border); z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-btn { background: none; border: none; font-weight: bold; color: var(--secondary); cursor: pointer; padding: 10px; font-size: 0.85rem; border-bottom: 3px solid transparent; }
+        .nav-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+
+        .dashboard { background: var(--card); border-radius: 16px; padding: 15px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .stat-box { text-align: center; padding: 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); }
+        .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--primary); display: block; }
+        .stat-label { font-size: 0.55rem; font-weight: bold; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .form-card { background: var(--card); padding: 15px; border-radius: 16px; margin-bottom: 20px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        input, select, #btnSalvar { width: 100%; padding: 12px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 0.9rem; }
+        #btnSalvar { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 8px; }
+
+        .tarefa-card { background: var(--card); border-radius: 12px; padding: 12px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .check-area input { transform: scale(1.3); margin-right: 12px; }
+        .info-area { flex: 1; }
+        .cat-label { font-size: 0.6rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+        .tarefa-titulo { font-size: 0.95rem; font-weight: 600; display: block; }
+        .tarefa-meta { font-size: 0.7rem; color: var(--secondary); }
+        .acoes-area { display: flex; gap: 8px; }
+        .btn-acao { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 4px; }
+        .concluida { opacity: 0.5; }
+        .concluida .tarefa-titulo { text-decoration: line-through; }
+        
+        .dark-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
 
+<button class="dark-toggle" id="btnDarkMode">🌓</button>
+
+<div class="nav-top" id="menuNav" style="display:none;">
+    <button class="nav-btn active" id="btnAbaTarefas" onclick="mudarAba('tarefas')">📋 TAREFAS</button>
+    <button class="nav-btn" id="btnAbaCompras" onclick="mudarAba('compras')">🛒 COMPRAS</button>
+</div>
+
 <div class="container">
-    <div id="loginArea">
-        <h1>🏠 Acesso Familiar</h1>
-        <button id="btnLogin" class="btn-login">ENTRAR AGORA</button>
+    <div id="telaLogin" style="text-align:center; padding-top: 50px;">
+        <h1>🏠 Gestão Familiar</h1>
+        <button id="btnLogin" style="width:100%; padding:15px; border-radius:12px; font-weight:bold; cursor:pointer; background:var(--primary); color:white; border:none;">Entrar com Google</button>
     </div>
 
-    <div id="appArea" style="display:none;">
-        <h3>Itens no Banco de Dados</h3>
-        <div id="lista"></div>
-        <p style="margin-top:20px; font-size: 0.8rem; color: gray;">Após apagar os itens, me avise para voltarmos com o design completo.</p>
+    <div id="telaApp" class="hidden">
+        <div id="secaoCabecalho">
+            <div class="dashboard">
+                <div class="stat-box"><span class="stat-label">Hoje</span><span class="stat-val" id="valDia">0%</span></div>
+                <div class="stat-box"><span class="stat-label">Mês</span><span class="stat-val" id="valMes">0%</span></div>
+                <div class="stat-box"><span class="stat-label">Semestre</span><span class="stat-val" id="valSem">0%</span></div>
+                <div class="stat-box"><span class="stat-label">Ano</span><span class="stat-val" id="valAnu">0%</span></div>
+            </div>
+            <div class="form-card">
+                <input type="text" id="inputTarefa" placeholder="O que faremos hoje?">
+                <div style="display:flex; gap:5px;">
+                    <select id="selectCategoria" style="flex:1;">
+                        <option value="GERAL">📂 GERAL</option>
+                        <option value="ALIMENTAÇÃO">🧑‍🍳 ALIMENTAÇÃO</option>
+                        <option value="MERCADO">🛒 MERCADO</option>
+                        <option value="CARRO">🚗 CARRO</option>
+                        <option value="IGREJA">⛪ IGREJA/PASCOM</option>
+                        <option value="EDUCAÇÃO">📚 EDUCAÇÃO</option>
+                        <option value="FAXINA">🧹 FAXINA</option>
+                        <option value="PET">🐾 PET</option>
+                        <option value="MANUTENÇÃO">🛠️ MANUTENÇÃO</option>
+                        <option value="SAÚDE">💊 SAÚDE</option>
+                        <option value="FINANÇAS">💰 FINANÇAS</option>
+                        <option value="LAZER">🍕 LAZER</option>
+                        <option value="FÉRIAS">🌴 FÉRIAS</option>
+                    </select>
+                    <select id="selectRecorrencia" style="flex:1;">
+                        <option value="nenhuma">📍 Única</option>
+                        <option value="diaria">🔄 Diária</option>
+                        <option value="semanal">📅 Semanal</option>
+                        <option value="mensal">🗓️ Mensal</option>
+                        <option value="semestral">⏳ Semestral</option>
+                        <option value="anual">🎆 Anual</option>
+                    </select>
+                </div>
+                <input type="date" id="inputData">
+                <button id="btnSalvar">Salvar na Lista</button>
+            </div>
+        </div>
+        <div id="listaTarefas"></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithPopup, onAuthStateChanged, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const config = { 
-        apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc", 
-        authDomain: "gestao-familiar-ac7d6.firebaseapp.com", 
-        projectId: "gestao-familiar-ac7d6", 
-        storageBucket: "gestao-familiar-ac7d6.firebasestorage.app", 
-        messagingSenderId: "1063581141078", 
-        appId: "1:1063581141078:web:af2fc67412dbc6fee313f7" 
-    };
-
-    const app = initializeApp(config);
+    const firebaseConfig = { apiKey: "AIzaSyBG9XmFduYzpXhYcWF9UPSbGa-w2GZ3cKc", authDomain: "gestao-familiar-ac7d6.firebaseapp.com", projectId: "gestao-familiar-ac7d6", storageBucket: "gestao-familiar-ac7d6.firebasestorage.app", messagingSenderId: "1063581141078", appId: "1:1063581141078:web:af2fc67412dbc6fee313f7" };
+    const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
+    let tarefasGlobais = [], abaAtiva = "tarefas", idEdicao = null;
+
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+    document.getElementById('btnDarkMode').onclick = () => {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    };
+
     onAuthStateChanged(auth, user => {
         if (user) {
-            document.getElementById('loginArea').style.display = 'none';
-            document.getElementById('appArea').style.display = 'block';
-            
-            onSnapshot(collection(db, "tarefas"), snap => {
-                const listaDiv = document.getElementById('lista');
-                listaDiv.innerHTML = "";
-                snap.forEach(d => {
-                    const t = d.data();
-                    const div = document.createElement('div');
-                    div.className = 'item';
-                    div.innerHTML = `
-                        <div><strong>${t.descricao}</strong><br><small>${t.categoria}</small></div>
-                        <button class="btn-del" onclick="window.matar('${d.id}')">APAGAR 🗑️</button>
-                    `;
-                    listaDiv.appendChild(div);
-                });
+            document.getElementById('telaLogin').classList.add('hidden');
+            document.getElementById('telaApp').classList.remove('hidden');
+            document.getElementById('menuNav').style.display = 'flex';
+            document.getElementById('inputData').value = new Date().toISOString().split('T')[0];
+            onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), snap => {
+                tarefasGlobais = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderizar();
             });
         }
     });
 
-    window.matar = async (id) => {
-        if(confirm("Eliminar este item para sempre?")) {
-            await deleteDoc(doc(db, "tarefas", id));
+    window.mudarAba = (aba) => {
+        abaAtiva = aba;
+        document.getElementById('btnAbaTarefas').classList.toggle('active', aba === 'tarefas');
+        document.getElementById('btnAbaCompras').classList.toggle('active', aba === 'compras');
+        document.getElementById('secaoCabecalho').classList.toggle('hidden', aba === 'compras');
+        renderizar();
+    };
+
+    window.toggleTarefa = async (id, status) => {
+        const t = tarefasGlobais.find(x => x.id === id);
+        await updateDoc(doc(db, "tarefas", id), { concluida: status });
+        if (status && t.recorrencia && t.recorrencia !== "nenhuma") {
+            let p = t.dataLimite.split("-");
+            let d = new Date(p[0], p[1]-1, p[2]);
+            if (t.recorrencia === "diaria") d.setDate(d.getDate() + 1);
+            else if (t.recorrencia === "semanal") d.setDate(d.getDate() + 7);
+            else if (t.recorrencia === "mensal") d.setMonth(d.getMonth() + 1);
+            else if (t.recorrencia === "semestral") d.setMonth(d.getMonth() + 6);
+            else if (t.recorrencia === "anual") d.setFullYear(d.getFullYear() + 1);
+            await addDoc(collection(db, "tarefas"), { 
+                descricao: t.descricao, categoria: t.categoria, recorrencia: t.recorrencia, 
+                dataLimite: d.toISOString().split('T')[0], concluida: false, criadoEm: new Date() 
+            });
         }
     };
 
-    document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
+    window.eliminar = async id => {
+        if(confirm("Apagar permanentemente?")) { 
+            await deleteDoc(doc(db, "tarefas", id)); 
+            tarefasGlobais = tarefasGlobais.filter(t => t.id !== id);
+            renderizar();
+        }
+    };
+
+    window.prepararEdicao = (id, desc, cat, data, rec) => {
+        idEdicao = id;
+        document.getElementById('inputTarefa').value = desc;
+        document.getElementById('selectCategoria').value = cat;
+        document.getElementById('inputData').value = data;
+        document.getElementById('selectRecorrencia').value = rec || "nenhuma";
+        document.getElementById('btnSalvar').innerText = "Atualizar";
+        window.scrollTo(0,0);
+    };
+
+    document.getElementById('btnSalvar').onclick = async () => {
+        const desc = document.getElementById('inputTarefa').value;
+        if (!desc) return;
+        const dados = { 
+            descricao: desc, categoria: document.getElementById('selectCategoria').value, 
+            dataLimite: document.getElementById('inputData').value, recorrencia: document.getElementById('selectRecorrencia').value 
+        };
+        if (idEdicao) {
+            await updateDoc(doc(db, "tarefas", idEdicao), dados);
+            idEdicao = null;
+            document.getElementById('btnSalvar').innerText = "Salvar na Lista";
+        } else {
+            await addDoc(collection(db, "tarefas"), { ...dados, concluida: false, criadoEm: new Date() });
+        }
+        document.getElementById('inputTarefa').value = "";
+    };
+
+    function renderizar() {
+        const lista = document.getElementById('listaTarefas');
+        lista.innerHTML = "";
+        const filtradas = abaAtiva === 'compras' ? tarefasGlobais.filter(t => t.categoria === "MERCADO") : tarefasGlobais;
+        filtradas.forEach(t => {
+            const card = document.createElement('div');
+            card.className = `tarefa-card ${t.concluida ? 'concluida' : ''}`;
+            card.innerHTML = `
+                <div class="check-area"><input type="checkbox" ${t.concluida ? 'checked' : ''} onchange="window.toggleTarefa('${t.id}', this.checked)"></div>
+                <div class="info-area">
+                    <span class="cat-label">${t.categoria} ${t.recorrencia !== 'nenhuma' ? '🔄' : ''}</span>
+                    <span class="tarefa-titulo">${t.descricao}</span>
+                    <span class="tarefa-meta">🗓️ ${t.dataLimite.split('-').reverse().join('/')}</span>
+                </div>
+                <div class="acoes-area">
+                    <button class="btn-acao" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')">✏️</button>
+                    <button class="btn-acao" onclick="window.eliminar('${t.id}')">🗑️</button>
+                </div>`;
+            lista.appendChild(card);
+        });
+        const hojeObj = new Date();
+        const hojeStr = hojeObj.toISOString().split('T')[0];
+        const calc = (f) => {
+            const t = tarefasGlobais.filter(f);
+            return t.length > 0 ? Math.round((t.filter(x => x.concluida).length / t.length) * 100) : 0;
+        };
+        document.getElementById('valDia').innerText = calc(t => t.dataLimite === hojeStr) + "%";
+        document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(hojeStr.substring(0,7))) + "%";
+        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semestral') + "%";
+        document.getElementById('valAnu').innerText = calc(t => t.recorrencia === 'anual' || t.dataLimite.startsWith(hojeStr.substring(0,4))) + "%";
+    }
+
+    document.getElementById('btnLogin').onclick = () => {
+        setPersistence(auth, browserLocalPersistence).then(() => signInWithPopup(auth, provider));
+    };
 </script>
 </body>
 </html>
