@@ -3,60 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar Pro - Categorias Sincronizadas</title>
+    <title>Gestão Familiar Pro - Fix Final</title>
     <style>
-        :root {
-            --bg: #f8fafc;
-            --card: rgba(255, 255, 255, 0.95);
-            --text: #0f172a;
-            --primary: #4f46e5;
-            --border: #e2e8f0;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        body.dark-mode {
-            --bg: #0f172a;
-            --card: rgba(30, 41, 59, 1);
-            --text: #f8fafc;
-            --border: #334155;
-            --primary: #818cf8;
-        }
-        body { 
-            font-family: 'Inter', system-ui, sans-serif; 
-            background: var(--bg); color: var(--text); margin: 0; padding-top: 85px; display: flex; justify-content: center; min-height: 100vh;
-        }
+        :root { --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --primary: #4f46e5; --border: #e2e8f0; --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        body.dark-mode { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #818cf8; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 85px; display: flex; justify-content: center; min-height: 100vh; transition: 0.3s; }
         .container { width: 92%; max-width: 480px; padding-bottom: 50px; }
         .hidden { display: none !important; }
-        
-        .nav-top { 
-            position: fixed; top: 15px; width: 90%; max-width: 450px; 
-            background: var(--card); backdrop-filter: blur(10px);
-            display: flex; justify-content: space-around; padding: 8px; 
-            border-radius: 20px; border: 1px solid var(--border); z-index: 1000; box-shadow: var(--shadow);
-        }
-        .nav-btn { background: none; border: none; font-weight: 700; color: var(--text); cursor: pointer; padding: 10px 15px; font-size: 0.8rem; border-radius: 12px; }
+        .nav-top { position: fixed; top: 15px; width: 90%; max-width: 450px; background: var(--card); display: flex; justify-content: space-around; padding: 8px; border-radius: 20px; border: 1px solid var(--border); z-index: 1000; box-shadow: var(--shadow); }
+        .nav-btn { background: none; border: none; font-weight: 700; color: var(--text); cursor: pointer; padding: 10px 20px; font-size: 0.85rem; border-radius: 15px; }
         .nav-btn.active { background: var(--primary); color: white; }
-
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-box { background: var(--card); padding: 12px; border-radius: 15px; border: 1px solid var(--border); text-align: center; }
-        .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--primary); display: block; }
-        .stat-label { font-size: 0.6rem; font-weight: bold; opacity: 0.7; text-transform: uppercase; }
-        
-        .form-card { background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 25px; border: 1px solid var(--border); box-shadow: var(--shadow); }
-        input, select, #btnSalvar { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem; }
-        #btnSalvar { background: var(--primary); color: white; border: none; font-weight: 700; cursor: pointer; margin-top: 10px; }
-
-        .tarefa-card { background: var(--card); border-radius: 15px; padding: 15px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 10px; gap: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .stat-box { background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); text-align: center; }
+        .stat-val { font-size: 1.3rem; font-weight: 800; color: var(--primary); display: block; }
+        .stat-label { font-size: 0.65rem; font-weight: bold; opacity: 0.7; text-transform: uppercase; }
+        .form-card { background: var(--card); padding: 20px; border-radius: 24px; margin-bottom: 25px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+        input, select, #btnSalvar { width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.95rem; }
+        #btnSalvar { background: var(--primary); color: white; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        .tarefa-card { background: var(--card); border-radius: 20px; padding: 18px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 12px; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .info-area { flex: 1; }
-        .desc-principal { font-size: 0.95rem; font-weight: 700; display: block; }
-        
-        .btn-check { background: #dcfce7; color: #166534; border: none; width: 35px; height: 35px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .btn-acao { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 5px; }
-
-        .compra-item { background: var(--card); padding: 14px; border-radius: 12px; margin-bottom: 6px; border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; border-left-width: 6px; }
-        .item-nome { font-size: 0.95rem; font-weight: 600; }
-        .item-concluido { opacity: 0.4; filter: grayscale(1); text-decoration: line-through; }
-
-        .dark-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 15px; font-size: 1.2rem; z-index: 999; }
+        .desc-principal { font-size: 1rem; font-weight: 700; display: block; margin-top: 2px; }
+        .btn-check { background: #dcfce7; color: #166534; border: none; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        .btn-acao { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 5px; opacity: 0.7; }
+        .btn-acao:hover { opacity: 1; }
+        .compra-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; border-left: 8px solid var(--primary); }
+        .dark-toggle { position: fixed; bottom: 25px; right: 25px; background: var(--primary); color: white; border: none; width: 55px; height: 55px; border-radius: 20px; font-size: 1.5rem; z-index: 999; }
     </style>
 </head>
 <body>
@@ -68,9 +39,9 @@
 </div>
 
 <div class="container">
-    <div id="telaLogin" style="text-align:center; padding-top: 50px;">
+    <div id="telaLogin" style="text-align:center; padding-top: 80px;">
         <h2>Gestão Familiar</h2>
-        <button id="btnLogin" style="background:var(--primary); color:white; padding:15px; border-radius:12px; width:100%; border:none; font-weight:bold; cursor:pointer;">Entrar com Google</button>
+        <button id="btnLogin" style="background:var(--primary); color:white; padding:18px; border-radius:15px; width:100%; border:none; font-weight:bold; cursor:pointer;">Entrar com Google</button>
     </div>
 
     <div id="telaApp" class="hidden">
@@ -105,10 +76,10 @@
                         <option value="VIAGEM">✈️ VIAGEM</option>
                     </select>
                     <select id="selectRecorrencia" style="flex:1;">
-                        <option value="nenhuma">📍 Única</option>
-                        <option value="diaria">🔄 Diária</option>
-                        <option value="semanal">📅 Semanal</option>
-                        <option value="mensal">🗓️ Mensal</option>
+                        <option value="Única">📍 Única</option>
+                        <option value="Diária">🔄 Diária</option>
+                        <option value="Semanal">📅 Semanal</option>
+                        <option value="Mensal">🗓️ Mensal</option>
                     </select>
                 </div>
                 <input type="date" id="inputData">
@@ -132,8 +103,6 @@
 
     let tarefasGlobais = [], abaAtiva = "tarefas", idEdicao = null;
 
-    const getCor = (s) => `hsl(${[...s].reduce((a,c)=>c.charCodeAt(0)+a,0)%360}, 60%, 80%)`;
-
     onAuthStateChanged(auth, user => {
         if (user) {
             document.getElementById('telaLogin').classList.add('hidden');
@@ -146,28 +115,16 @@
         }
     });
 
-    window.mudarAba = (a) => { 
-        abaAtiva = a; 
-        document.getElementById('btnAbaTarefas').classList.toggle('active', a === 'tarefas');
-        document.getElementById('btnAbaCompras').classList.toggle('active', a === 'compras');
-        renderizar(); 
-    };
+    window.mudarAba = (a) => { abaAtiva = a; renderizar(); };
 
     window.handleConcluir = async (id) => {
         const t = tarefasGlobais.find(x => x.id === id);
         await updateDoc(doc(db, "tarefas", id), { concluida: !t.concluida });
     };
 
-    // FUNÇÃO DE EXCLUSÃO REFORÇADA
     window.eliminar = async (id) => { 
-        if(confirm("Deseja apagar esta tarefa permanentemente?")) {
-            try {
-                await deleteDoc(doc(db, "tarefas", id));
-                console.log("Tarefa excluída com sucesso.");
-            } catch (error) {
-                console.error("Erro ao excluir do banco:", error);
-                alert("Erro ao apagar. Verifique sua conexão.");
-            }
+        if(confirm("Deseja apagar esta tarefa definitivamente?")) {
+            await deleteDoc(doc(db, "tarefas", id)).catch(err => alert("Erro ao apagar: " + err));
         }
     };
 
@@ -181,46 +138,27 @@
     };
 
     document.getElementById('btnSalvar').onclick = async () => {
-        const d = document.getElementById('inputTarefa').value;
-        const c = document.getElementById('selectCategoria').value;
-        const dt = document.getElementById('inputData').value;
-        const r = document.getElementById('selectRecorrencia').value;
+        const d = document.getElementById('inputTarefa').value, c = document.getElementById('selectCategoria').value;
+        const dt = document.getElementById('inputData').value, r = document.getElementById('selectRecorrencia').value;
         if (!d || !dt) return;
-        
         if (idEdicao) {
             await updateDoc(doc(db, "tarefas", idEdicao), { descricao: d, categoria: c, dataLimite: dt, recorrencia: r });
-            idEdicao = null; 
-            document.getElementById('btnSalvar').innerText = "Adicionar na Lista";
+            idEdicao = null; document.getElementById('btnSalvar').innerText = "Adicionar na Lista";
         } else {
-            await addDoc(collection(db, "tarefas"), { 
-                descricao: d, 
-                categoria: c, 
-                dataLimite: dt, 
-                recorrencia: r, 
-                concluida: false, 
-                criadoEm: new Date(), 
-                statusItens: {} 
-            });
+            await addDoc(collection(db, "tarefas"), { descricao: d, categoria: c, dataLimite: dt, recorrencia: r, concluida: false, criadoEm: new Date(), statusItens: {} });
         }
         document.getElementById('inputTarefa').value = "";
     };
 
     function renderizar() {
-        const lista = document.getElementById('listaTarefas');
-        lista.innerHTML = "";
-        
+        const lista = document.getElementById('listaTarefas'); lista.innerHTML = "";
         if (abaAtiva === 'tarefas') {
             tarefasGlobais.forEach(t => {
                 const desc = t.descricao.replace(/\([^)]+\)/, "").trim() || t.categoria;
-                const div = document.createElement('div');
-                div.className = 'tarefa-card';
-                div.innerHTML = `
-                    <button class="btn-check" onclick="handleConcluir('${t.id}')">${t.concluida ? '✅' : '✓'}</button>
-                    <div class="info-area">
-                        <span style="font-size:0.65rem; font-weight:800; color:var(--primary);">${t.categoria}</span>
-                        <span class="desc-principal">${desc}</span>
-                        <span style="font-size:0.7rem; opacity:0.6;">📅 ${dtFormat(t.dataLimite)}</span>
-                    </div>
+                const div = document.createElement('div'); div.className = 'tarefa-card';
+                div.innerHTML = `<button class="btn-check" onclick="handleConcluir('${t.id}')">${t.concluida ? '✅' : '✓'}</button>
+                    <div class="info-area"><span style="font-size:0.65rem; font-weight:800; color:var(--primary);">${t.categoria}</span>
+                    <span class="desc-principal">${desc}</span><span style="font-size:0.75rem; opacity:0.6;">📅 ${dtFormat(t.dataLimite)}</span></div>
                     <button class="btn-acao" onclick="prepararEdicao('${t.id}',\`${t.descricao}\`,'${t.categoria}','${t.dataLimite}','${t.recorrencia}')">✏️</button>
                     <button class="btn-acao" onclick="eliminar('${t.id}')">🗑️</button>`;
                 lista.appendChild(div);
@@ -228,42 +166,29 @@
         } else {
             tarefasGlobais.filter(t => !t.concluida).forEach(t => {
                 const m = t.descricao.match(/\(([^)]+)\)/);
-                if (m) {
-                    m[1].split(',').forEach((item, idx) => {
-                        const div = document.createElement('div');
-                        const ok = t.statusItens && t.statusItens[idx];
-                        div.className = `compra-item ${ok?'item-concluido' : ''}`;
-                        div.style.borderLeftColor = getCor(item.trim());
-                        div.innerHTML = `<input type="checkbox" ${ok?'checked':''} onchange="toggleItem('${t.id}',${idx},this.checked)" style="transform:scale(1.2)">
-                                         <span class="item-nome">${item.trim()}</span>`;
-                        lista.appendChild(div);
-                    });
-                }
+                if (m) m[1].split(',').forEach((item, idx) => {
+                    const div = document.createElement('div'); const ok = t.statusItens && t.statusItens[idx];
+                    div.className = `compra-item ${ok?'item-concluido':''}`;
+                    div.innerHTML = `<input type="checkbox" ${ok?'checked':''} onchange="toggleItem('${t.id}',${idx},this.checked)" style="transform:scale(1.4)"><span>${item.trim()}</span>`;
+                    lista.appendChild(div);
+                });
             });
         }
         updateDash();
     }
-
     const dtFormat = (d) => d ? d.split('-').reverse().join('/') : "";
-    
     window.toggleItem = async (id, idx, st) => {
-        const t = tarefasGlobais.find(x => x.id === id);
-        let nst = t.statusItens || {}; nst[idx] = st;
+        const t = tarefasGlobais.find(x => x.id === id); let nst = t.statusItens || {}; nst[idx] = st;
         await updateDoc(doc(db, "tarefas", id), { statusItens: nst });
     };
-
     function updateDash() {
         const hoje = new Date().toISOString().split('T')[0];
-        const calc = (f) => {
-            const t = tarefasGlobais.filter(f);
-            return t.length > 0 ? Math.round((t.filter(x => x.concluida).length / t.length) * 100) : 0;
-        };
+        const calc = (f) => { const t = tarefasGlobais.filter(f); return t.length > 0 ? Math.round((t.filter(x => x.concluida).length / t.length) * 100) : 0; };
         document.getElementById('valDia').innerText = calc(t => t.dataLimite === hoje) + "%";
         document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(hoje.substring(0,7))) + "%";
-        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semanal') + "%";
+        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'Semanal') + "%";
         document.getElementById('valAnu').innerText = calc(t => t.dataLimite.startsWith('2026')) + "%";
     }
-
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
     document.getElementById('btnDarkMode').onclick = () => document.body.classList.toggle('dark-mode');
 </script>
