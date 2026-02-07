@@ -37,6 +37,7 @@
         .container { width: 92%; max-width: 480px; padding-bottom: 50px; }
         .hidden { display: none !important; }
         
+        /* Menu Superior */
         .nav-top { 
             position: fixed; top: 15px; width: 90%; max-width: 450px; 
             background: var(--card); backdrop-filter: blur(10px);
@@ -50,6 +51,7 @@
         }
         .nav-btn.active { background: var(--primary); color: white; }
 
+        /* Dashboard */
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .stat-box { 
             background: var(--card); padding: 15px; border-radius: 18px; border: 1px solid var(--border); 
@@ -58,47 +60,37 @@
         .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--primary); display: block; }
         .stat-label { font-size: 0.65rem; font-weight: bold; opacity: 0.7; text-transform: uppercase; }
         
+        /* Formulário */
         .form-card { 
             background: var(--card); padding: 20px; border-radius: 24px; 
             margin-bottom: 25px; border: 1px solid var(--border); box-shadow: var(--shadow);
-            position: relative;
         }
         input, select, #btnSalvar { 
             width: 100%; padding: 14px; margin: 6px 0; border-radius: 12px; 
             border: 1px solid var(--border); background: var(--bg); color: var(--text); 
             box-sizing: border-box; font-size: 0.95rem;
         }
-
-        /* AJUSTE PARA ROLAGEM DE CATEGORIAS */
-        select {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 1em;
-        }
-
         #btnSalvar { background: var(--primary); color: white; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; }
 
+        /* Cards de Tarefas */
         .tarefa-card { 
             background: var(--card); border-radius: 20px; padding: 18px; 
             display: flex; align-items: center; border: 1px solid var(--border); 
             margin-bottom: 12px; justify-content: space-between;
         }
+        .desc-principal { font-size: 1rem; font-weight: 700; color: var(--text); display: block; margin-top: 4px; }
+        .data-label { font-size: 0.75rem; opacity: 0.6; font-weight: 500; }
         
-        /* CHECKLIST EM LINHA ÚNICA ALINHADA */
+        /* Checklist com Cores nos Itens */
         .compra-item { 
             background: var(--card); padding: 16px; border-radius: 18px; 
             margin-bottom: 8px; border: 1px solid var(--border); 
             display: flex; align-items: center; gap: 15px;
+            border-left-width: 8px; /* Aumenta a borda colorida */
         }
         .item-text { flex: 1; display: flex; align-items: center; justify-content: space-between; }
-        .item-nome { font-size: 1rem; font-weight: 600; }
-        .item-categoria { 
-            font-size: 0.55rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;
-        }
-        .item-concluido { opacity: 0.4; }
+        .item-nome { font-size: 1.05rem; font-weight: 600; color: #1e293b; }
+        .item-concluido { opacity: 0.3; filter: grayscale(1); }
         .item-concluido .item-nome { text-decoration: line-through; }
 
         .btn-limpar-lista { background: #fee2e2; color: #ef4444; border: none; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 20px; }
@@ -111,7 +103,7 @@
 
 <div class="nav-top" id="menuNav" style="display:none;">
     <button class="nav-btn active" id="btnAbaTarefas" onclick="mudarAba('tarefas')">Tarefas</button>
-    <button class="nav-btn" id="btnAbaCompras" onclick="mudarAba('compras')">Itens</button>
+    <button class="nav-btn" id="btnAbaCompras" onclick="mudarAba('compras')">Checklist</button>
 </div>
 
 <div class="container">
@@ -129,7 +121,7 @@
                 <div class="stat-box"><span class="stat-label">Ano 2026</span><span class="stat-val" id="valAnu">0%</span></div>
             </div>
             <div class="form-card">
-                <input type="text" id="inputTarefa" placeholder="Item 1, Item 2...">
+                <input type="text" id="inputTarefa" placeholder="Ex: Ir ao Mercado (Arroz, Feijão)">
                 <div style="display:flex; gap:8px;">
                     <select id="selectCategoria" style="flex:1.2;">
                         <option value="GERAL">📂 GERAL</option>
@@ -157,7 +149,7 @@
                     </select>
                 </div>
                 <input type="date" id="inputData">
-                <button id="btnSalvar">Adicionar na Lista</button>
+                <button id="btnSalvar">Salvar Tudo</button>
             </div>
         </div>
         <div id="listaTarefas"></div>
@@ -177,11 +169,12 @@
 
     let tarefasGlobais = [], abaAtiva = "tarefas", idEdicao = null;
 
-    const coresCat = {
-        GERAL: '#f1f5f9', ALIMENTAÇÃO: '#ffedd5', MERCADO: '#dcfce7', CARRO: '#e2e8f0', 
-        PASCOM: '#c7d2fe', IGREJA: '#fef3c7', EDUCAÇÃO: '#fae8ff', FAXINA: '#f1f5f9', 
-        PET: '#ffedd5', MANUTENÇÃO: '#e2e8f0', SAÚDE: '#fee2e2', FINANÇAS: '#d1fae5', 
-        LAZER: '#fde68a', FÉRIAS: '#e0f2fe'
+    // Gerador de cores pastéis para os itens
+    const getCorItem = (str) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        const h = hash % 360;
+        return `hsl(${h}, 70%, 90%)`;
     };
 
     if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
@@ -214,19 +207,21 @@
         const t = tarefasGlobais.find(x => x.id === id);
         let novosStatus = t.statusItens || {};
         novosStatus[index] = status;
-        const total = t.descricao.split(',').length;
-        const concluidos = Object.values(novosStatus).filter(v => v === true).length;
-        await updateDoc(doc(db, "tarefas", id), { statusItens: novosStatus, concluida: total === concluidos });
+        await updateDoc(doc(db, "tarefas", id), { statusItens: novosStatus });
     };
 
     window.limparConcluidos = async () => {
-        if(confirm("Remover itens já marcados?")) {
+        if(confirm("Deseja remover da lista apenas os itens marcados?")) {
             for (const t of tarefasGlobais) {
                 if (t.statusItens) {
-                    const descOriginal = t.descricao.split(',');
-                    const novosItens = descOriginal.filter((_, idx) => !t.statusItens[idx]);
-                    if (novosItens.length === 0) await deleteDoc(doc(db, "tarefas", t.id));
-                    else if (novosItens.length !== descOriginal.length) await updateDoc(doc(db, "tarefas", t.id), { descricao: novosItens.join(','), statusItens: {}, concluida: false });
+                    const match = t.descricao.match(/\(([^)]+)\)/);
+                    if (!match) continue;
+                    const itensArray = match[1].split(',');
+                    const novosItens = itensArray.filter((_, idx) => !t.statusItens[idx]);
+                    const textoLimpo = t.descricao.replace(/\([^)]+\)/, "").trim();
+                    const novaDesc = novosItens.length > 0 ? `${textoLimpo} (${novosItens.join(',')})` : textoLimpo;
+                    if (!novaDesc) await deleteDoc(doc(db, "tarefas", t.id));
+                    else await updateDoc(doc(db, "tarefas", t.id), { descricao: novaDesc, statusItens: {} });
                 }
             }
         }
@@ -242,7 +237,7 @@
         window.scrollTo(0,0);
     };
 
-    window.eliminar = async id => { if(confirm("Apagar lista?")) await deleteDoc(doc(db, "tarefas", id)); };
+    window.eliminar = async id => { if(confirm("Apagar permanentemente?")) await deleteDoc(doc(db, "tarefas", id)); };
 
     document.getElementById('btnSalvar').onclick = async () => {
         const desc = document.getElementById('inputTarefa').value;
@@ -253,7 +248,7 @@
         if (idEdicao) {
             await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc, categoria: cat, dataLimite: data, recorrencia: rec });
             idEdicao = null;
-            document.getElementById('btnSalvar').innerText = "Adicionar na Lista";
+            document.getElementById('btnSalvar').innerText = "Salvar na Lista";
         } else {
             await addDoc(collection(db, "tarefas"), { descricao: desc, categoria: cat, dataLimite: data, recorrencia: rec, concluida: false, criadoEm: new Date(), statusItens: {} });
         }
@@ -266,10 +261,15 @@
         
         if (abaAtiva === 'tarefas') {
             tarefasGlobais.forEach(t => {
+                const descExibir = t.descricao.replace(/\([^)]+\)/, "").trim() || t.categoria;
                 const div = document.createElement('div');
                 div.className = 'tarefa-card';
                 div.innerHTML = `
-                    <div class="info-area"><span style="font-size:0.85rem; font-weight:800; color:var(--primary);">${t.categoria}</span><span style="font-size:0.75rem; opacity:0.6;">📅 ${t.dataLimite.split('-').reverse().join('/')}</span></div>
+                    <div class="info-area">
+                        <span style="font-size:0.75rem; font-weight:800; color:var(--primary);">${t.categoria}</span>
+                        <span class="desc-principal">${descExibir}</span>
+                        <span class="data-label">📅 ${t.dataLimite.split('-').reverse().join('/')}</span>
+                    </div>
                     <div style="display:flex; gap:10px;">
                         <button onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✏️</button>
                         <button onclick="window.eliminar('${t.id}')" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">🗑️</button>
@@ -277,25 +277,34 @@
                 lista.appendChild(div);
             });
         } else {
-            const btn = document.createElement('button');
-            btn.className = "btn-limpar-lista"; btn.innerText = "🧹 Limpar Marcados";
-            btn.onclick = window.limparConcluidos;
-            lista.appendChild(btn);
+            const btnLimpar = document.createElement('button');
+            btnLimpar.className = "btn-limpar-lista"; btnLimpar.innerText = "🧹 LIMPAR ITENS CONCLUÍDOS";
+            btnLimpar.onclick = window.limparConcluidos;
+            lista.appendChild(btnLimpar);
 
             tarefasGlobais.forEach(t => {
-                const itens = t.descricao.split(',');
-                itens.forEach((item, idx) => {
-                    if (item.trim() === "") return;
-                    const concluido = t.statusItens && t.statusItens[idx];
-                    const div = document.createElement('div');
-                    div.className = `compra-item ${concluido ? 'item-concluido' : ''}`;
-                    div.innerHTML = `
-                        <input type="checkbox" ${concluido ? 'checked' : ''} onchange="window.toggleItem('${t.id}', ${idx}, this.checked)" style="transform:scale(1.4); cursor:pointer;">
-                        <div class="item-text"><span class="item-nome">${item.trim()}</span><span class="item-categoria" style="background:${coresCat[t.categoria] || '#eee'}; color:#1e293b;">${t.categoria}</span></div>`;
-                    lista.appendChild(div);
-                });
+                const match = t.descricao.match(/\(([^)]+)\)/);
+                if (match) {
+                    const itens = match[1].split(',');
+                    itens.forEach((item, idx) => {
+                        if (item.trim() === "") return;
+                        const concluido = t.statusItens && t.statusItens[idx];
+                        const corBorda = getCorItem(item.trim());
+                        const div = document.createElement('div');
+                        div.className = `compra-item ${concluido ? 'item-concluido' : ''}`;
+                        div.style.borderLeftColor = corBorda;
+                        div.innerHTML = `
+                            <input type="checkbox" ${concluido ? 'checked' : ''} onchange="window.toggleItem('${t.id}', ${idx}, this.checked)" style="transform:scale(1.4);">
+                            <div class="item-text">
+                                <span class="item-nome">${item.trim()}</span>
+                                <span style="font-size:0.6rem; opacity:0.6; font-weight:bold;">${t.categoria}</span>
+                            </div>`;
+                        lista.appendChild(div);
+                    });
+                }
             });
         }
+        // Lógica Dashboard
         const hoje = new Date().toISOString().split('T')[0];
         const calc = (f) => {
             const t = tarefasGlobais.filter(f);
@@ -304,7 +313,7 @@
         document.getElementById('valDia').innerText = calc(t => t.dataLimite === hoje) + "%";
         document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(hoje.substring(0,7))) + "%";
         document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semestral') + "%";
-        document.getElementById('valAnu').innerText = calc(t => t.dataLimite.startsWith('2026') || t.recorrencia === 'anual') + "%";
+        document.getElementById('valAnu').innerText = calc(t => t.dataLimite.startsWith('2026')) + "%";
     }
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
 </script>
