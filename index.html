@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar Pro - FORCE DELETE</title>
+    <title>Gestão Familiar Pro - FIX FINAL</title>
     <style>
         :root { --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --primary: #4f46e5; --border: #e2e8f0; }
         body.dark-mode { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #818cf8; }
@@ -24,7 +24,6 @@
         .btn-check { background: #dcfce7; color: #166534; border: none; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         .btn-acao { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 5px; }
         .btn-delete { color: #ef4444; }
-        .compra-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; border-left: 8px solid var(--primary); }
         .dark-toggle { position: fixed; bottom: 25px; right: 25px; background: var(--primary); color: white; border: none; width: 55px; height: 55px; border-radius: 20px; font-size: 1.5rem; z-index: 999; }
     </style>
 </head>
@@ -50,25 +49,20 @@
             <div class="stat-box"><span class="stat-label">Ano 2026</span><span class="stat-val" id="valAnu">0%</span></div>
         </div>
         <div class="form-card">
-            <input type="text" id="inputTarefa" placeholder="Ação (opcional: itens entre parênteses)">
+            <input type="text" id="inputTarefa" placeholder="O que precisa ser feito?">
             <div style="display:flex; gap:8px;">
                 <select id="selectCategoria" style="flex:1.2;">
                     <option value="MERCADO">🛒 MERCADO</option>
-                    <option value="VIAGEM">✈️ VIAGEM</option>
-                    <option value="IGREJA">⛪ IGREJA</option>
-                    <option value="PASCOM">⛪ PASCOM</option>
-                    <option value="CASA">🏠 CASA</option>
-                    <option value="PET">🐾 PET</option>
-                    <option value="SAÚDE">💊 SAÚDE</option>
-                    <option value="FINANÇAS">💰 FINANÇAS</option>
-                    <option value="TRABALHO">💼 TRABALHO</option>
-                    <option value="ESTUDO">📚 ESTUDO</option>
-                    <option value="LAZER">🎈 LAZER</option>
-                    <option value="FAXINA">🧹 FAXINA</option>
                     <option value="CARRO">🚗 CARRO</option>
-                    <option value="MANUTENÇÃO">🛠️ MANUTENÇÃO</option>
-                    <option value="FÉRIAS">🌴 FÉRIAS</option>
+                    <option value="CASA">🏠 CASA</option>
+                    <option value="MELISSA">👧 MELISSA</option>
+                    <option value="PASCOM">⛪ PASCOM</option>
+                    <option value="PLAYCANEGATTO">🐶 PLAYCANEGATTO</option>
+                    <option value="ADRIANA">👩 ADRIANA</option>
+                    <option value="FELIPE">👦 FELIPE</option>
+                    <option value="ANDERSON">👨 ANDERSON</option>
                     <option value="GERAL">📂 GERAL</option>
+                    <option value="FAXINA">🧹 FAXINA</option>
                 </select>
                 <select id="selectRecorrencia" style="flex:1;">
                     <option value="nenhuma">📍 Única</option>
@@ -111,14 +105,27 @@
 
     window.mudarAba = (a) => { 
         abaAtiva = a; 
-        document.getElementById('btnAbaTarefas').classList.toggle('active', a === 'tarefas');
-        document.getElementById('btnAbaCompras').classList.toggle('active', a === 'compras');
         renderizar(); 
     };
 
-    window.forcaApagar = async (id) => {
-        if(confirm("Deseja apagar esta tarefa permanentemente?")) {
-            await deleteDoc(doc(db, "tarefas", id.trim()));
+    // MODO EXTERMÍNIO: Apaga no banco e remove da tela na hora
+    window.exterminarTarefa = async (id, elemento) => {
+        if(confirm("Deseja eliminar esta tarefa agora?")) {
+            try {
+                // 1. Esconde da tela imediatamente
+                elemento.closest('.tarefa-card').style.display = 'none';
+                
+                // 2. Apaga no Firebase
+                const tarefaRef = doc(db, "tarefas", id.trim());
+                await deleteDoc(tarefaRef);
+                
+                console.log("Tarefa exterminada com sucesso.");
+            } catch (error) {
+                console.error("Erro ao apagar:", error);
+                // Se der erro, mostra de volta
+                elemento.closest('.tarefa-card').style.display = 'flex';
+                alert("Erro ao apagar no servidor. Tente novamente.");
+            }
         }
     };
 
@@ -160,27 +167,13 @@
                     <div class="info-area"><span style="font-size:0.65rem; font-weight:800; color:var(--primary);">${t.categoria}</span>
                     <span class="desc-principal">${desc}</span><span style="font-size:0.75rem; opacity:0.6;">📅 ${t.dataLimite.split('-').reverse().join('/')}</span></div>
                     <button class="btn-acao" onclick="prepararEdicao('${t.id}',\`${t.descricao}\`,'${t.categoria}','${t.dataLimite}','${t.recorrencia}')">✏️</button>
-                    <button class="btn-acao btn-delete" onclick="forcaApagar('${t.id}')">🗑️</button>`;
+                    <button class="btn-acao btn-delete" onclick="exterminarTarefa('${t.id}', this)">🗑️</button>`;
                 lista.appendChild(div);
-            });
-        } else {
-            tarefasGlobais.filter(t => !t.concluida).forEach(t => {
-                const m = t.descricao.match(/\(([^)]+)\)/);
-                if (m) m[1].split(',').forEach((item, idx) => {
-                    const div = document.createElement('div'); const ok = t.statusItens && t.statusItens[idx];
-                    div.className = `compra-item ${ok?'item-concluido':''}`;
-                    div.innerHTML = `<input type="checkbox" ${ok?'checked':''} onchange="toggleItem('${t.id}',${idx},this.checked)" style="transform:scale(1.4)"><span>${item.trim()}</span>`;
-                    lista.appendChild(div);
-                });
             });
         }
         updateDash();
     }
-    const getCor = (s) => `hsl(${[...s].reduce((a,c)=>c.charCodeAt(0)+a,0)%360}, 65%, 85%)`;
-    window.toggleItem = async (id, idx, st) => {
-        const t = tarefasGlobais.find(x => x.id === id); let nst = t.statusItens || {}; nst[idx] = st;
-        await updateDoc(doc(db, "tarefas", id), { statusItens: nst });
-    };
+
     function updateDash() {
         const hoje = new Date().toISOString().split('T')[0];
         const calc = (f) => { const t = tarefasGlobais.filter(f); return t.length > 0 ? Math.round((t.filter(x => x.concluida).length / t.length) * 100) : 0; };
