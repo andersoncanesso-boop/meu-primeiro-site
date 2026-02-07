@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Home & Shop</title>
+    <title>Gestão Familiar Pro</title>
     <style>
         :root {
             --bg: #f8fafc;
@@ -17,7 +17,7 @@
         }
         body.dark-mode {
             --bg: #0f172a;
-            --card: rgba(30, 41, 59, 0.8);
+            --card: rgba(30, 41, 59, 0.9);
             --text: #f8fafc;
             --border: #334155;
             --primary: #818cf8;
@@ -74,30 +74,21 @@
             display: flex; align-items: center; border: 1px solid var(--border); 
             margin-bottom: 12px; justify-content: space-between;
         }
-        .cat-tag { font-size: 0.75rem; font-weight: 800; color: var(--primary); margin-bottom: 4px; display: block; }
         
-        /* CHECKLIST EM LINHA ÚNICA */
         .compra-item { 
             background: var(--card); padding: 16px; border-radius: 18px; 
             margin-bottom: 8px; border: 1px solid var(--border); 
             display: flex; align-items: center; gap: 15px;
         }
-        .item-text { 
-            flex: 1; display: flex; align-items: center; justify-content: space-between; 
-        }
+        .item-text { flex: 1; display: flex; align-items: center; justify-content: space-between; }
         .item-nome { font-size: 1rem; font-weight: 500; }
         .item-categoria { 
-            font-size: 0.6rem; font-weight: 800; color: var(--primary); 
-            background: var(--primary-light); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;
+            font-size: 0.55rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;
         }
         .item-concluido { opacity: 0.4; }
         .item-concluido .item-nome { text-decoration: line-through; }
 
-        .btn-limpar-lista { 
-            background: #fee2e2; color: #ef4444; border: none; padding: 12px; 
-            border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 20px;
-        }
-
+        .btn-limpar-lista { background: #fee2e2; color: #ef4444; border: none; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 20px; }
         .dark-toggle { position: fixed; bottom: 25px; right: 25px; background: var(--primary); color: white; border: none; width: 55px; height: 55px; border-radius: 20px; font-size: 1.5rem; z-index: 999; }
     </style>
 </head>
@@ -122,10 +113,10 @@
                 <div class="stat-box"><span class="stat-label">Hoje</span><span class="stat-val" id="valDia">0%</span></div>
                 <div class="stat-box"><span class="stat-label">Mês</span><span class="stat-val" id="valMes">0%</span></div>
                 <div class="stat-box"><span class="stat-label">Semestre</span><span class="stat-val" id="valSem">0%</span></div>
-                <div class="stat-box"><span class="stat-label">Ano</span><span class="stat-val" id="valAnu">0%</span></div>
+                <div class="stat-box"><span class="stat-label">Ano 2026</span><span class="stat-val" id="valAnu">0%</span></div>
             </div>
             <div class="form-card">
-                <input type="text" id="inputTarefa" placeholder="Item 1, Item 2, Item 3...">
+                <input type="text" id="inputTarefa" placeholder="Item 1, Item 2...">
                 <div style="display:flex; gap:8px;">
                     <select id="selectCategoria" style="flex:1.2;">
                         <option value="MERCADO">🛒 MERCADO</option>
@@ -135,6 +126,9 @@
                         <option value="PET">🐾 PET</option>
                         <option value="SAÚDE">💊 SAÚDE</option>
                         <option value="FINANÇAS">💰 FINANÇAS</option>
+                        <option value="TRABALHO">💼 TRABALHO</option>
+                        <option value="ESTUDO">📚 ESTUDO</option>
+                        <option value="LAZER">🎈 LAZER</option>
                         <option value="GERAL">📂 GERAL</option>
                     </select>
                     <select id="selectRecorrencia" style="flex:1;">
@@ -143,6 +137,7 @@
                         <option value="semanal">📅 Semanal</option>
                         <option value="mensal">🗓️ Mensal</option>
                         <option value="semestral">⏳ Semestral</option>
+                        <option value="anual">🎆 Anual</option>
                     </select>
                 </div>
                 <input type="date" id="inputData">
@@ -165,6 +160,12 @@
     const provider = new GoogleAuthProvider();
 
     let tarefasGlobais = [], abaAtiva = "tarefas", idEdicao = null;
+
+    const coresCat = {
+        MERCADO: '#dcfce7', VIAGEM: '#e0f2fe', IGREJA: '#fef3c7', CASA: '#ede9fe',
+        PET: '#ffedd5', SAÚDE: '#fee2e2', FINANÇAS: '#d1fae5', TRABALHO: '#e2e8f0',
+        ESTUDO: '#fae8ff', LAZER: '#ffedd5', GERAL: '#f1f5f9'
+    };
 
     if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
     document.getElementById('btnDarkMode').onclick = () => {
@@ -196,7 +197,11 @@
         const t = tarefasGlobais.find(x => x.id === id);
         let novosStatus = t.statusItens || {};
         novosStatus[index] = status;
-        await updateDoc(doc(db, "tarefas", id), { statusItens: novosStatus });
+        
+        // Se todos os itens marcados, marca a tarefa pai como concluída para o dashboard
+        const total = t.descricao.split(',').length;
+        const concluidos = Object.values(novosStatus).filter(v => v === true).length;
+        await updateDoc(doc(db, "tarefas", id), { statusItens: novosStatus, concluida: total === concluidos });
     };
 
     window.limparConcluidos = async () => {
@@ -206,7 +211,7 @@
                     const descOriginal = t.descricao.split(',');
                     const novosItens = descOriginal.filter((_, idx) => !t.statusItens[idx]);
                     if (novosItens.length === 0) await deleteDoc(doc(db, "tarefas", t.id));
-                    else if (novosItens.length !== descOriginal.length) await updateDoc(doc(db, "tarefas", t.id), { descricao: novosItens.join(','), statusItens: {} });
+                    else if (novosItens.length !== descOriginal.length) await updateDoc(doc(db, "tarefas", t.id), { descricao: novosItens.join(','), statusItens: {}, concluida: false });
                 }
             }
         }
@@ -249,7 +254,10 @@
                 const div = document.createElement('div');
                 div.className = 'tarefa-card';
                 div.innerHTML = `
-                    <div class="info-area"><span class="cat-tag">${t.categoria}</span><span style="font-size:0.8rem; opacity:0.7;">📅 ${t.dataLimite.split('-').reverse().join('/')}</span></div>
+                    <div class="info-area">
+                        <span style="font-size:0.75rem; font-weight:800; color:var(--primary);">${t.categoria}</span>
+                        <div style="font-size:0.8rem; opacity:0.7;">📅 ${t.dataLimite.split('-').reverse().join('/')} | ${t.recorrencia}</div>
+                    </div>
                     <div style="display:flex; gap:10px;">
                         <button onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✏️</button>
                         <button onclick="window.eliminar('${t.id}')" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">🗑️</button>
@@ -273,21 +281,26 @@
                         <input type="checkbox" ${concluido ? 'checked' : ''} onchange="window.toggleItem('${t.id}', ${idx}, this.checked)" style="transform:scale(1.4); cursor:pointer;">
                         <div class="item-text">
                             <span class="item-nome">${item.trim()}</span>
-                            <span class="item-categoria">${t.categoria}</span>
+                            <span class="item-categoria" style="background:${coresCat[t.categoria] || '#eee'}; color:#1e293b;">${t.categoria}</span>
                         </div>`;
                     lista.appendChild(div);
                 });
             });
         }
+        
         const hoje = new Date().toISOString().split('T')[0];
+        const anoAtual = hoje.substring(0,4);
+        
         const calc = (f) => {
             const t = tarefasGlobais.filter(f);
             return t.length > 0 ? Math.round((t.filter(x => x.concluida).length / t.length) * 100) : 0;
         };
+
         document.getElementById('valDia').innerText = calc(t => t.dataLimite === hoje) + "%";
         document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(hoje.substring(0,7))) + "%";
         document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semestral') + "%";
-        document.getElementById('valAnu').innerText = calc(t => t.recorrencia === 'anual' || t.dataLimite.startsWith(hoje.substring(0,4))) + "%";
+        // RETROATIVIDADE ANUAL: Filtra tudo que for do ano de 2026
+        document.getElementById('valAnu').innerText = calc(t => t.dataLimite.startsWith(anoAtual) || t.recorrencia === 'anual') + "%";
     }
 
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
