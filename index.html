@@ -21,7 +21,7 @@
         #btnSalvar { background: var(--primary); color: white; border: none; font-weight: 700; cursor: pointer; }
         .tarefa-card { background: var(--card); border-radius: 20px; padding: 18px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 12px; gap: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .info-area { flex: 1; }
-        .btn-check { background: #dcfce7; color: #166534; border: none; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; }
+        .btn-check { background: #dcfce7; color: #166534; border: none; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
         .btn-acao { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 5px; }
         .btn-delete { color: #ef4444; }
         .compra-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; border-left: 8px solid var(--primary); }
@@ -32,8 +32,8 @@
 
 <button class="dark-toggle" id="btnDarkMode">🌓</button>
 <div class="nav-top" id="menuNav" style="display:none;">
-    <button class="nav-btn active" onclick="mudarAba('tarefas')">Tarefas</button>
-    <button class="nav-btn" onclick="mudarAba('compras')">Itens</button>
+    <button class="nav-btn active" id="btnAbaTarefas" onclick="mudarAba('tarefas')">Tarefas</button>
+    <button class="nav-btn" id="btnAbaCompras" onclick="mudarAba('compras')">Itens</button>
 </div>
 
 <div class="container">
@@ -43,7 +43,7 @@
     </div>
 
     <div id="telaApp" class="hidden">
-        <div class="dashboard" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
+        <div class="dashboard">
             <div class="stat-box"><span class="stat-label">Hoje</span><span class="stat-val" id="valDia">0%</span></div>
             <div class="stat-box"><span class="stat-label">Mês</span><span class="stat-val" id="valMes">0%</span></div>
             <div class="stat-box"><span class="stat-label">Semestre</span><span class="stat-val" id="valSem">0%</span></div>
@@ -53,24 +53,22 @@
             <input type="text" id="inputTarefa" placeholder="Ação (opcional: itens entre parênteses)">
             <div style="display:flex; gap:8px;">
                 <select id="selectCategoria" style="flex:1.2;">
-                    <option value="GERAL">📂 GERAL</option>
-                    <option value="ALIMENTAÇÃO">🧑‍🍳 ALIMENTAÇÃO</option>
                     <option value="MERCADO">🛒 MERCADO</option>
-                    <option value="CARRO">🚗 CARRO</option>
+                    <option value="VIAGEM">✈️ VIAGEM</option>
+                    <option value="IGREJA">⛪ IGREJA</option>
                     <option value="PASCOM">⛪ PASCOM</option>
-                    <option value="IGREJA">🕍 IGREJA</option>
-                    <option value="EDUCAÇÃO">📚 EDUCAÇÃO</option>
-                    <option value="FAXINA">🧹 FAXINA</option>
-                    <option value="PET">🐕 PET</option>
-                    <option value="MANUTENÇÃO">🛠️ MANUTENÇÃO</option>
+                    <option value="CASA">🏠 CASA</option>
+                    <option value="PET">🐾 PET</option>
                     <option value="SAÚDE">💊 SAÚDE</option>
                     <option value="FINANÇAS">💰 FINANÇAS</option>
-                    <option value="LAZER">🎈 LAZER</option>
-                    <option value="FÉRIAS">🌴 FÉRIAS</option>
-                    <option value="CASA">🏠 CASA</option>
                     <option value="TRABALHO">💼 TRABALHO</option>
                     <option value="ESTUDO">📚 ESTUDO</option>
-                    <option value="VIAGEM">✈️ VIAGEM</option>
+                    <option value="LAZER">🎈 LAZER</option>
+                    <option value="FAXINA">🧹 FAXINA</option>
+                    <option value="CARRO">🚗 CARRO</option>
+                    <option value="MANUTENÇÃO">🛠️ MANUTENÇÃO</option>
+                    <option value="FÉRIAS">🌴 FÉRIAS</option>
+                    <option value="GERAL">📂 GERAL</option>
                 </select>
                 <select id="selectRecorrencia" style="flex:1;">
                     <option value="nenhuma">📍 Única</option>
@@ -111,20 +109,16 @@
         }
     });
 
-    window.mudarAba = (a) => { abaAtiva = a; renderizar(); };
+    window.mudarAba = (a) => { 
+        abaAtiva = a; 
+        document.getElementById('btnAbaTarefas').classList.toggle('active', a === 'tarefas');
+        document.getElementById('btnAbaCompras').classList.toggle('active', a === 'compras');
+        renderizar(); 
+    };
 
-    // FUNÇÃO FORÇADA DE EXCLUSÃO
-    window.forcaApagar = async (idTarefa) => {
-        if(confirm("FORÇAR EXCLUSÃO? Esta ação é definitiva.")) {
-            try {
-                // Tenta apagar direto usando a referência do documento
-                const ref = doc(db, "tarefas", idTarefa.trim());
-                await deleteDoc(ref);
-                console.log("Sucesso no Force Delete");
-            } catch (error) {
-                console.error("Erro no Force Delete:", error);
-                alert("Erro ao forçar exclusão. Tente recarregar a página.");
-            }
+    window.forcaApagar = async (id) => {
+        if(confirm("Deseja apagar esta tarefa permanentemente?")) {
+            await deleteDoc(doc(db, "tarefas", id.trim()));
         }
     };
 
@@ -140,6 +134,7 @@
         document.getElementById('inputData').value = data;
         document.getElementById('selectRecorrencia').value = rec;
         document.getElementById('btnSalvar').innerText = "Atualizar";
+        window.scrollTo(0,0);
     };
 
     document.getElementById('btnSalvar').onclick = async () => {
@@ -181,6 +176,7 @@
         }
         updateDash();
     }
+    const getCor = (s) => `hsl(${[...s].reduce((a,c)=>c.charCodeAt(0)+a,0)%360}, 65%, 85%)`;
     window.toggleItem = async (id, idx, st) => {
         const t = tarefasGlobais.find(x => x.id === id); let nst = t.statusItens || {}; nst[idx] = st;
         await updateDoc(doc(db, "tarefas", id), { statusItens: nst });
