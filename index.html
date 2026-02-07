@@ -81,7 +81,7 @@
             display: flex; align-items: center; gap: 15px;
         }
         .item-text { flex: 1; display: flex; align-items: center; justify-content: space-between; }
-        .item-nome { font-size: 1rem; font-weight: 500; }
+        .item-nome { font-size: 1rem; font-weight: 600; }
         .item-categoria { 
             font-size: 0.55rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;
         }
@@ -119,17 +119,20 @@
                 <input type="text" id="inputTarefa" placeholder="Item 1, Item 2...">
                 <div style="display:flex; gap:8px;">
                     <select id="selectCategoria" style="flex:1.2;">
+                        <option value="GERAL">📂 GERAL</option>
+                        <option value="ALIMENTAÇÃO">🧑‍🍳 ALIMENTAÇÃO</option>
                         <option value="MERCADO">🛒 MERCADO</option>
-                        <option value="VIAGEM">✈️ VIAGEM</option>
-                        <option value="IGREJA">⛪ IGREJA</option>
-                        <option value="CASA">🏠 CASA</option>
-                        <option value="PET">🐾 PET</option>
+                        <option value="CARRO">🚗 CARRO</option>
+                        <option value="PASCOM">⛪ PASCOM</option>
+                        <option value="IGREJA">🕍 IGREJA</option>
+                        <option value="EDUCAÇÃO">📚 EDUCAÇÃO</option>
+                        <option value="FAXINA">🧹 FAXINA</option>
+                        <option value="PET">🐕 PET</option>
+                        <option value="MANUTENÇÃO">🛠️ MANUTENÇÃO</option>
                         <option value="SAÚDE">💊 SAÚDE</option>
                         <option value="FINANÇAS">💰 FINANÇAS</option>
-                        <option value="TRABALHO">💼 TRABALHO</option>
-                        <option value="ESTUDO">📚 ESTUDO</option>
                         <option value="LAZER">🎈 LAZER</option>
-                        <option value="GERAL">📂 GERAL</option>
+                        <option value="FÉRIAS">🌴 FÉRIAS</option>
                     </select>
                     <select id="selectRecorrencia" style="flex:1;">
                         <option value="nenhuma">📍 Única</option>
@@ -162,9 +165,10 @@
     let tarefasGlobais = [], abaAtiva = "tarefas", idEdicao = null;
 
     const coresCat = {
-        MERCADO: '#dcfce7', VIAGEM: '#e0f2fe', IGREJA: '#fef3c7', CASA: '#ede9fe',
-        PET: '#ffedd5', SAÚDE: '#fee2e2', FINANÇAS: '#d1fae5', TRABALHO: '#e2e8f0',
-        ESTUDO: '#fae8ff', LAZER: '#ffedd5', GERAL: '#f1f5f9'
+        GERAL: '#f1f5f9', ALIMENTAÇÃO: '#ffedd5', MERCADO: '#dcfce7', CARRO: '#e2e8f0', 
+        PASCOM: '#c7d2fe', IGREJA: '#fef3c7', EDUCAÇÃO: '#fae8ff', FAXINA: '#f1f5f9', 
+        PET: '#ffedd5', MANUTENÇÃO: '#e2e8f0', SAÚDE: '#fee2e2', FINANÇAS: '#d1fae5', 
+        LAZER: '#fde68a', FÉRIAS: '#e0f2fe'
     };
 
     if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
@@ -197,8 +201,6 @@
         const t = tarefasGlobais.find(x => x.id === id);
         let novosStatus = t.statusItens || {};
         novosStatus[index] = status;
-        
-        // Se todos os itens marcados, marca a tarefa pai como concluída para o dashboard
         const total = t.descricao.split(',').length;
         const concluidos = Object.values(novosStatus).filter(v => v === true).length;
         await updateDoc(doc(db, "tarefas", id), { statusItens: novosStatus, concluida: total === concluidos });
@@ -254,10 +256,7 @@
                 const div = document.createElement('div');
                 div.className = 'tarefa-card';
                 div.innerHTML = `
-                    <div class="info-area">
-                        <span style="font-size:0.75rem; font-weight:800; color:var(--primary);">${t.categoria}</span>
-                        <div style="font-size:0.8rem; opacity:0.7;">📅 ${t.dataLimite.split('-').reverse().join('/')} | ${t.recorrencia}</div>
-                    </div>
+                    <div class="info-area"><span style="font-size:0.85rem; font-weight:800; color:var(--primary);">${t.categoria}</span><span style="font-size:0.75rem; opacity:0.6;">🗓️ ${t.dataLimite.split('-').reverse().join('/')}</span></div>
                     <div style="display:flex; gap:10px;">
                         <button onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✏️</button>
                         <button onclick="window.eliminar('${t.id}')" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">🗑️</button>
@@ -279,30 +278,21 @@
                     div.className = `compra-item ${concluido ? 'item-concluido' : ''}`;
                     div.innerHTML = `
                         <input type="checkbox" ${concluido ? 'checked' : ''} onchange="window.toggleItem('${t.id}', ${idx}, this.checked)" style="transform:scale(1.4); cursor:pointer;">
-                        <div class="item-text">
-                            <span class="item-nome">${item.trim()}</span>
-                            <span class="item-categoria" style="background:${coresCat[t.categoria] || '#eee'}; color:#1e293b;">${t.categoria}</span>
-                        </div>`;
+                        <div class="item-text"><span class="item-nome">${item.trim()}</span><span class="item-categoria" style="background:${coresCat[t.categoria] || '#eee'}; color:#1e293b;">${t.categoria}</span></div>`;
                     lista.appendChild(div);
                 });
             });
         }
-        
         const hoje = new Date().toISOString().split('T')[0];
-        const anoAtual = hoje.substring(0,4);
-        
         const calc = (f) => {
             const t = tarefasGlobais.filter(f);
             return t.length > 0 ? Math.round((t.filter(x => x.concluida).length / t.length) * 100) : 0;
         };
-
         document.getElementById('valDia').innerText = calc(t => t.dataLimite === hoje) + "%";
         document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(hoje.substring(0,7))) + "%";
         document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semestral') + "%";
-        // RETROATIVIDADE ANUAL: Filtra tudo que for do ano de 2026
-        document.getElementById('valAnu').innerText = calc(t => t.dataLimite.startsWith(anoAtual) || t.recorrencia === 'anual') + "%";
+        document.getElementById('valAnu').innerText = calc(t => t.dataLimite.startsWith('2026') || t.recorrencia === 'anual') + "%";
     }
-
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
 </script>
 </body>
