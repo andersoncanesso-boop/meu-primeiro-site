@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar Pro - Fix Final</title>
+    <title>Gestão Familiar Pro - Fix Estável</title>
     <style>
         :root { --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --primary: #4f46e5; --border: #e2e8f0; --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         body.dark-mode { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; --primary: #818cf8; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 85px; display: flex; justify-content: center; min-height: 100vh; transition: 0.3s; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 85px; display: flex; justify-content: center; min-height: 100vh; }
         .container { width: 92%; max-width: 480px; padding-bottom: 50px; }
         .hidden { display: none !important; }
         .nav-top { position: fixed; top: 15px; width: 90%; max-width: 450px; background: var(--card); display: flex; justify-content: space-around; padding: 8px; border-radius: 20px; border: 1px solid var(--border); z-index: 1000; box-shadow: var(--shadow); }
@@ -22,10 +22,9 @@
         #btnSalvar { background: var(--primary); color: white; border: none; font-weight: 700; cursor: pointer; margin-top: 8px; }
         .tarefa-card { background: var(--card); border-radius: 20px; padding: 18px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 12px; gap: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .info-area { flex: 1; }
-        .desc-principal { font-size: 1rem; font-weight: 700; display: block; margin-top: 2px; }
+        .desc-principal { font-size: 1rem; font-weight: 700; display: block; }
         .btn-check { background: #dcfce7; color: #166534; border: none; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
-        .btn-acao { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 5px; opacity: 0.7; }
-        .btn-acao:hover { opacity: 1; }
+        .btn-acao { background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 5px; }
         .compra-item { background: var(--card); padding: 16px; border-radius: 18px; margin-bottom: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; border-left: 8px solid var(--primary); }
         .dark-toggle { position: fixed; bottom: 25px; right: 25px; background: var(--primary); color: white; border: none; width: 55px; height: 55px; border-radius: 20px; font-size: 1.5rem; z-index: 999; }
     </style>
@@ -76,10 +75,10 @@
                         <option value="VIAGEM">✈️ VIAGEM</option>
                     </select>
                     <select id="selectRecorrencia" style="flex:1;">
-                        <option value="Única">📍 Única</option>
-                        <option value="Diária">🔄 Diária</option>
-                        <option value="Semanal">📅 Semanal</option>
-                        <option value="Mensal">🗓️ Mensal</option>
+                        <option value="nenhuma">📍 Única</option>
+                        <option value="diaria">🔄 Diária</option>
+                        <option value="semanal">📅 Semanal</option>
+                        <option value="mensal">🗓️ Mensal</option>
                     </select>
                 </div>
                 <input type="date" id="inputData">
@@ -122,9 +121,10 @@
         await updateDoc(doc(db, "tarefas", id), { concluida: !t.concluida });
     };
 
+    // FUNÇÃO DE EXCLUSÃO REFORÇADA: Deleta direto do ID
     window.eliminar = async (id) => { 
-        if(confirm("Deseja apagar esta tarefa definitivamente?")) {
-            await deleteDoc(doc(db, "tarefas", id)).catch(err => alert("Erro ao apagar: " + err));
+        if(confirm("Apagar esta tarefa permanentemente?")) {
+            await deleteDoc(doc(db, "tarefas", id)).catch(err => console.error("Erro ao apagar:", err));
         }
     };
 
@@ -160,7 +160,7 @@
                     <div class="info-area"><span style="font-size:0.65rem; font-weight:800; color:var(--primary);">${t.categoria}</span>
                     <span class="desc-principal">${desc}</span><span style="font-size:0.75rem; opacity:0.6;">📅 ${dtFormat(t.dataLimite)}</span></div>
                     <button class="btn-acao" onclick="prepararEdicao('${t.id}',\`${t.descricao}\`,'${t.categoria}','${t.dataLimite}','${t.recorrencia}')">✏️</button>
-                    <button class="btn-acao" onclick="eliminar('${t.id}')">🗑️</button>`;
+                    <button class="btn-acao" onclick="window.eliminar('${t.id}')">🗑️</button>`;
                 lista.appendChild(div);
             });
         } else {
@@ -186,7 +186,7 @@
         const calc = (f) => { const t = tarefasGlobais.filter(f); return t.length > 0 ? Math.round((t.filter(x => x.concluida).length / t.length) * 100) : 0; };
         document.getElementById('valDia').innerText = calc(t => t.dataLimite === hoje) + "%";
         document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(hoje.substring(0,7))) + "%";
-        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'Semanal') + "%";
+        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semanal') + "%";
         document.getElementById('valAnu').innerText = calc(t => t.dataLimite.startsWith('2026')) + "%";
     }
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
