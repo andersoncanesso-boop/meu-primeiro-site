@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Home & Shop</title>
+    <title>Gestão Familiar - Smart Home</title>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; }
+        :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; --danger: #ef4444; }
         body.dark-mode { --bg: #111111; --card: #1e1e1e; --text: #f5f5f5; --border: #333333; --primary: #60a5fa; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-top: 75px; display: flex; justify-content: center; transition: 0.3s; }
         .container { width: 92%; max-width: 480px; }
@@ -34,8 +34,9 @@
 
         .compra-item { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 6px; border: 1px solid var(--border); border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 10px; }
         .item-text { flex: 1; font-size: 0.95rem; }
-        .item-concluido { opacity: 0.4; text-decoration: line-through; }
+        .item-concluido { opacity: 0.3; text-decoration: line-through; }
 
+        .btn-limpar-lista { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 15px; font-size: 0.8rem; }
         .dark-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     </style>
 </head>
@@ -138,6 +139,27 @@
         await updateDoc(doc(db, "tarefas", id), { statusItens: novosStatus });
     };
 
+    // FUNÇÃO PARA LIMPAR ITENS MARCADOS SEM APAGAR A TAREFA PAI
+    window.limparConcluidos = async () => {
+        if(confirm("Deseja remover da lista apenas os itens que já foram marcados?")) {
+            for (const t of tarefasGlobais) {
+                if (t.statusItens) {
+                    const descOriginal = t.descricao.split(',');
+                    const novosItens = descOriginal.filter((_, idx) => !t.statusItens[idx]);
+                    
+                    if (novosItens.length === 0) {
+                        await deleteDoc(doc(db, "tarefas", t.id));
+                    } else if (novosItens.length !== descOriginal.length) {
+                        await updateDoc(doc(db, "tarefas", t.id), {
+                            descricao: novosItens.join(','),
+                            statusItens: {}
+                        });
+                    }
+                }
+            }
+        }
+    };
+
     window.prepararEdicao = (id, desc, cat, data, rec) => {
         idEdicao = id;
         document.getElementById('inputTarefa').value = desc;
@@ -148,7 +170,7 @@
         window.scrollTo(0,0);
     };
 
-    window.eliminar = async id => { if(confirm("Deseja apagar esta lista permanentemente?")) await deleteDoc(doc(db, "tarefas", id)); };
+    window.eliminar = async id => { if(confirm("Apagar lista inteira?")) await deleteDoc(doc(db, "tarefas", id)); };
 
     document.getElementById('btnSalvar').onclick = async () => {
         const desc = document.getElementById('inputTarefa').value;
@@ -156,16 +178,12 @@
         const data = document.getElementById('inputData').value;
         const rec = document.getElementById('selectRecorrencia').value;
         if (!desc) return;
-
         if (idEdicao) {
             await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc, categoria: cat, dataLimite: data, recorrencia: rec });
             idEdicao = null;
             document.getElementById('btnSalvar').innerText = "Salvar na Lista";
         } else {
-            await addDoc(collection(db, "tarefas"), {
-                descricao: desc, categoria: cat, dataLimite: data, recorrencia: rec,
-                concluida: false, criadoEm: new Date(), statusItens: {}
-            });
+            await addDoc(collection(db, "tarefas"), { descricao: desc, categoria: cat, dataLimite: data, recorrencia: rec, concluida: false, criadoEm: new Date(), statusItens: {} });
         }
         document.getElementById('inputTarefa').value = "";
     };
@@ -179,10 +197,7 @@
                 const card = document.createElement('div');
                 card.className = `tarefa-card`;
                 card.innerHTML = `
-                    <div class="info-area">
-                        <span class="cat-tag">${t.categoria}</span>
-                        <span class="tarefa-meta">Programado para: ${t.dataLimite.split('-').reverse().join('/')}</span>
-                    </div>
+                    <div class="info-area"><span class="cat-tag">${t.categoria}</span><span class="tarefa-meta">📅 ${t.dataLimite.split('-').reverse().join('/')}</span></div>
                     <div class="acoes-area">
                         <button class="btn-acao" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')">✏️</button>
                         <button class="btn-acao" onclick="window.eliminar('${t.id}')">🗑️</button>
@@ -190,23 +205,25 @@
                 lista.appendChild(card);
             });
         } else {
+            const btnLimpar = document.createElement('button');
+            btnLimpar.className = "btn-limpar-lista";
+            btnLimpar.innerText = "🧹 LIMPAR ITENS MARCADOS";
+            btnLimpar.onclick = window.limparConcluidos;
+            lista.appendChild(btnLimpar);
+
             tarefasGlobais.forEach(t => {
                 const itens = t.descricao.split(',');
-                if (t.descricao.trim().length > 0) {
-                    itens.forEach((item, idx) => {
-                        if (item.trim() === "") return;
-                        const concluido = t.statusItens && t.statusItens[idx];
-                        const div = document.createElement('div');
-                        div.className = `compra-item ${concluido ? 'item-concluido' : ''}`;
-                        div.innerHTML = `
-                            <input type="checkbox" ${concluido ? 'checked' : ''} onchange="window.toggleItem('${t.id}', ${idx}, this.checked)" style="transform:scale(1.2)">
-                            <div class="item-text">
-                                <span style="font-size:0.6rem; font-weight:bold; color:var(--primary); display:block; text-transform:uppercase;">${t.categoria}</span>
-                                <span>${item.trim()}</span>
-                            </div>`;
-                        lista.appendChild(div);
-                    });
-                }
+                itens.forEach((item, idx) => {
+                    if (item.trim() === "") return;
+                    const concluido = t.statusItens && t.statusItens[idx];
+                    const div = document.createElement('div');
+                    div.className = `compra-item ${concluido ? 'item-concluido' : ''}`;
+                    div.innerHTML = `
+                        <input type="checkbox" ${concluido ? 'checked' : ''} onchange="window.toggleItem('${t.id}', ${idx}, this.checked)">
+                        <div class="item-text"><span style="font-size:0.6rem; font-weight:bold; color:var(--primary); display:block;">${t.categoria}</span><span>${item.trim()}</span></div>
+                    `;
+                    lista.appendChild(div);
+                });
             });
         }
         
