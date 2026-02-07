@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar - Full Control</title>
+    <title>Gestão Familiar - Home & Shop</title>
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #1c1e21; --border: #ebedf0; --primary: #2563eb; --secondary: #65676b; }
         body.dark-mode { --bg: #111111; --card: #1e1e1e; --text: #f5f5f5; --border: #333333; --primary: #60a5fa; }
@@ -24,19 +24,19 @@
         input, select, #btnSalvar { width: 100%; padding: 12px; margin: 4px 0; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); box-sizing: border-box; font-size: 0.9rem; }
         #btnSalvar { background: var(--primary); color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 8px; }
 
-        .tarefa-card { background: var(--card); border-radius: 12px; padding: 12px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 8px; }
-        .info-area { flex: 1; }
-        .cat-tag { font-size: 0.55rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: var(--bg); color: var(--primary); border: 1px solid var(--primary); text-transform: uppercase; margin-bottom: 4px; display: inline-block; }
-        .tarefa-titulo { font-size: 0.95rem; font-weight: 600; display: block; }
+        .tarefa-card { background: var(--card); border-radius: 12px; padding: 15px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 8px; justify-content: space-between; }
+        .info-area { flex: 1; display: flex; flex-direction: column; }
+        .cat-tag { font-size: 1rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+        .tarefa-meta { font-size: 0.75rem; color: var(--secondary); margin-top: 4px; }
         
-        .acoes-area { display: flex; gap: 10px; }
-        .btn-acao { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+        .acoes-area { display: flex; gap: 12px; }
+        .btn-acao { background: none; border: none; cursor: pointer; font-size: 1.2rem; }
 
         .compra-item { background: var(--card); padding: 12px; border-radius: 10px; margin-bottom: 6px; border: 1px solid var(--border); border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 10px; }
-        .item-text { flex: 1; font-size: 0.9rem; }
+        .item-text { flex: 1; font-size: 0.95rem; }
         .item-concluido { opacity: 0.4; text-decoration: line-through; }
 
-        .dark-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; z-index: 999; }
+        .dark-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.5rem; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
@@ -45,7 +45,7 @@
 
 <div class="nav-top" id="menuNav" style="display:none;">
     <button class="nav-btn active" id="btnAbaTarefas" onclick="mudarAba('tarefas')">📋 TAREFAS</button>
-    <button class="nav-btn" id="btnAbaCompras" onclick="mudarAba('compras')">🛒 ITENS</button>
+    <button class="nav-btn" id="btnAbaCompras" onclick="mudarAba('compras')">🛒 CHECKLIST ITENS</button>
 </div>
 
 <div class="container">
@@ -63,12 +63,12 @@
                 <div class="stat-box"><span class="stat-label">Ano</span><span class="stat-val" id="valAnu">0%</span></div>
             </div>
             <div class="form-card">
-                <input type="text" id="inputTarefa" placeholder="Ex: Arroz, Feijão, Sabão...">
+                <input type="text" id="inputTarefa" placeholder="Descreva os itens separados por vírgula...">
                 <div style="display:flex; gap:5px;">
                     <select id="selectCategoria" style="flex:1;">
                         <option value="MERCADO">🛒 MERCADO</option>
                         <option value="VIAGEM">✈️ VIAGEM</option>
-                        <option value="IGREJA">⛪ IGREJA</option>
+                        <option value="IGREJA">⛪ IGREJA/PASCOM</option>
                         <option value="CASA">🏠 CASA</option>
                         <option value="PET">🐾 PET</option>
                         <option value="SAÚDE">💊 SAÚDE</option>
@@ -84,7 +84,7 @@
                     </select>
                 </div>
                 <input type="date" id="inputData">
-                <button id="btnSalvar">Salvar Tudo</button>
+                <button id="btnSalvar">Salvar na Lista</button>
             </div>
         </div>
         <div id="listaTarefas"></div>
@@ -144,11 +144,11 @@
         document.getElementById('selectCategoria').value = cat;
         document.getElementById('inputData').value = data;
         document.getElementById('selectRecorrencia').value = rec || "nenhuma";
-        document.getElementById('btnSalvar').innerText = "Atualizar Item";
+        document.getElementById('btnSalvar').innerText = "Atualizar Lista";
         window.scrollTo(0,0);
     };
 
-    window.eliminar = async id => { if(confirm("Apagar?")) await deleteDoc(doc(db, "tarefas", id)); };
+    window.eliminar = async id => { if(confirm("Deseja apagar esta lista permanentemente?")) await deleteDoc(doc(db, "tarefas", id)); };
 
     document.getElementById('btnSalvar').onclick = async () => {
         const desc = document.getElementById('inputTarefa').value;
@@ -160,7 +160,7 @@
         if (idEdicao) {
             await updateDoc(doc(db, "tarefas", idEdicao), { descricao: desc, categoria: cat, dataLimite: data, recorrencia: rec });
             idEdicao = null;
-            document.getElementById('btnSalvar').innerText = "Salvar Tudo";
+            document.getElementById('btnSalvar').innerText = "Salvar na Lista";
         } else {
             await addDoc(collection(db, "tarefas"), {
                 descricao: desc, categoria: cat, dataLimite: data, recorrencia: rec,
@@ -181,8 +181,7 @@
                 card.innerHTML = `
                     <div class="info-area">
                         <span class="cat-tag">${t.categoria}</span>
-                        <span class="tarefa-titulo">${t.descricao}</span>
-                        <span style="font-size:0.65rem; color:var(--secondary)">🗓️ ${t.dataLimite.split('-').reverse().join('/')}</span>
+                        <span class="tarefa-meta">Programado para: ${t.dataLimite.split('-').reverse().join('/')}</span>
                     </div>
                     <div class="acoes-area">
                         <button class="btn-acao" onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')">✏️</button>
@@ -200,12 +199,11 @@
                         const div = document.createElement('div');
                         div.className = `compra-item ${concluido ? 'item-concluido' : ''}`;
                         div.innerHTML = `
-                            <input type="checkbox" ${concluido ? 'checked' : ''} onchange="window.toggleItem('${t.id}', ${idx}, this.checked)">
+                            <input type="checkbox" ${concluido ? 'checked' : ''} onchange="window.toggleItem('${t.id}', ${idx}, this.checked)" style="transform:scale(1.2)">
                             <div class="item-text">
-                                <span style="font-size:0.6rem; font-weight:bold; color:var(--primary); display:block;">${t.categoria}</span>
+                                <span style="font-size:0.6rem; font-weight:bold; color:var(--primary); display:block; text-transform:uppercase;">${t.categoria}</span>
                                 <span>${item.trim()}</span>
-                            </div>
-                        `;
+                            </div>`;
                         lista.appendChild(div);
                     });
                 }
@@ -219,8 +217,8 @@
         };
         document.getElementById('valDia').innerText = calc(t => t.dataLimite === hoje) + "%";
         document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(hoje.substring(0,7))) + "%";
-        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semanal') + "%";
-        document.getElementById('valAnu').innerText = calc(t => t.recorrencia === 'semestral') + "%";
+        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semestral') + "%";
+        document.getElementById('valAnu').innerText = calc(t => t.recorrencia === 'anual' || t.dataLimite.startsWith(hoje.substring(0,4))) + "%";
     }
 
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
