@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão Familiar Pro</title>
+    <title>Gestão Familiar Pro - Recorrência Ativa</title>
     <style>
         :root {
             --bg: #f8fafc;
@@ -52,6 +52,7 @@
         #btnSalvar { background: var(--primary); color: white; border: none; font-weight: 700; cursor: pointer; }
 
         .tarefa-card { background: var(--card); border-radius: 20px; padding: 18px; display: flex; align-items: center; border: 1px solid var(--border); margin-bottom: 12px; justify-content: space-between; }
+        .tarefa-card.concluida-hoje { border-left: 5px solid #10b981; opacity: 0.7; }
         .desc-principal { font-size: 1rem; font-weight: 700; display: block; margin-top: 4px; }
         
         .compra-item { 
@@ -164,6 +165,37 @@
         renderizar();
     };
 
+    // MOTOR DE RECORRÊNCIA: Calcula a próxima data
+    function calcularProximaData(dataAtual, recorrencia) {
+        let novaData = new Date(dataAtual + "T12:00:00");
+        if (recorrencia === 'diaria') novaData.setDate(novaData.getDate() + 1);
+        else if (recorrencia === 'semanal') novaData.setDate(novaData.getDate() + 7);
+        else if (recorrencia === 'mensal') novaData.setMonth(novaData.getMonth() + 1);
+        else if (recorrencia === 'semestral') novaData.setMonth(novaData.getMonth() + 6);
+        else if (recorrencia === 'anual') novaData.setFullYear(novaData.getFullYear() + 1);
+        return novaData.toISOString().split('T')[0];
+    }
+
+    window.concluirTarefaRecorrente = async (id) => {
+        const t = tarefasGlobais.find(x => x.id === id);
+        if (t.recorrencia !== 'nenhuma') {
+            const novaData = calcularProximaData(t.dataLimite, t.recorrencia);
+            // Cria a próxima tarefa
+            await addDoc(collection(db, "tarefas"), {
+                ...t,
+                id: null, // Novo ID automático
+                dataLimite: novaData,
+                concluida: false,
+                statusItens: {}, // Reseta o checklist para a nova data
+                criadoEm: new Date()
+            });
+            // Marca a atual como concluída
+            await updateDoc(doc(db, "tarefas", id), { concluida: true });
+        } else {
+            await updateDoc(doc(db, "tarefas", id), { concluida: !t.concluida });
+        }
+    };
+
     window.toggleItem = async (id, index, status) => {
         const t = tarefasGlobais.find(x => x.id === id);
         let novosStatus = t.statusItens || {};
@@ -223,11 +255,13 @@
             tarefasGlobais.forEach(t => {
                 const descParaExibir = t.descricao.replace(/\([^)]+\)/, "").trim() || t.categoria;
                 const div = document.createElement('div');
-                div.className = 'tarefa-card';
+                div.className = `tarefa-card ${t.concluida ? 'concluida-hoje' : ''}`;
                 div.innerHTML = `
-                    <div><span style="font-size:0.75rem; font-weight:800; color:var(--primary);">${t.categoria}</span>
-                    <span class="desc-principal">${descParaExibir}</span>
-                    <span style="font-size:0.75rem; opacity:0.6;">📅 ${t.dataLimite.split('-').reverse().join('/')}</span></div>
+                    <div style="flex:1" onclick="window.concluirTarefaRecorrente('${t.id}')">
+                        <span style="font-size:0.75rem; font-weight:800; color:var(--primary);">${t.categoria} ${t.recorrencia !== 'nenhuma' ? '🔄' : ''}</span>
+                        <span class="desc-principal">${descParaExibir}</span>
+                        <span style="font-size:0.75rem; opacity:0.6;">📅 ${t.dataLimite.split('-').reverse().join('/')} (${t.recorrencia})</span>
+                    </div>
                     <div style="display:flex; gap:10px;">
                         <button onclick="window.prepararEdicao('${t.id}', \`${t.descricao}\`, '${t.categoria}', '${t.dataLimite}', '${t.recorrencia}')" style="background:none; border:none; font-size:1.2rem;">✏️</button>
                         <button onclick="window.eliminar('${t.id}')" style="background:none; border:none; font-size:1.2rem;">🗑️</button>
@@ -240,9 +274,9 @@
             btnLimpar.onclick = window.limparConcluidos;
             lista.appendChild(btnLimpar);
 
-            tarefasGlobais.forEach(t => {
+            tarefasGlobais.filter(t => !t.concluida).forEach(t => {
                 const match = t.descricao.match(/\(([^)]+)\)/);
-                if (match) { // SÓ ENTRA AQUI SE HOUVER PARÊNTESES
+                if (match) {
                     const itens = match[1].split(',');
                     itens.forEach((item, idx) => {
                         if (item.trim() === "") return;
@@ -261,6 +295,7 @@
                 }
             });
         }
+        // Dashboard
         const hoje = new Date().toISOString().split('T')[0];
         const calc = (f) => {
             const t = tarefasGlobais.filter(f);
@@ -268,7 +303,7 @@
         };
         document.getElementById('valDia').innerText = calc(t => t.dataLimite === hoje) + "%";
         document.getElementById('valMes').innerText = calc(t => t.dataLimite.startsWith(hoje.substring(0,7))) + "%";
-        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semestral') + "%";
+        document.getElementById('valSem').innerText = calc(t => t.recorrencia === 'semanal' || t.recorrencia === 'semestral') + "%";
         document.getElementById('valAnu').innerText = calc(t => t.dataLimite.startsWith('2026')) + "%";
     }
     document.getElementById('btnLogin').onclick = () => signInWithPopup(auth, provider);
